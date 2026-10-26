@@ -135,19 +135,38 @@ namespace Web.Management.PHP.Install
         /// </summary>
         public static int RunPHP(string executable, string arguments, out string output)
         {
+            string errors;
+            return RunPHP(executable, arguments, Path.GetDirectoryName(executable), out output, out errors);
+        }
+
+        /// <summary>
+        /// Runs a PHP executable in the given working directory and returns its exit code, stdout and stderr.
+        /// </summary>
+        public static int RunPHP(string executable, string arguments, string workingDirectory, out string output, out string errors)
+        {
             ProcessStartInfo startInfo = new ProcessStartInfo(executable, arguments);
             startInfo.UseShellExecute = false;
             startInfo.CreateNoWindow = true;
             startInfo.RedirectStandardOutput = true;
             startInfo.RedirectStandardError = true;
-            startInfo.WorkingDirectory = Path.GetDirectoryName(executable);
+            startInfo.WorkingDirectory = workingDirectory;
             // Make sure no php.ini from PHPRC of the calling process is used
             startInfo.EnvironmentVariables.Remove("PHPRC");
 
             using (Process process = Process.Start(startInfo))
             {
                 // Read stderr asynchronously to avoid deadlocks when both pipes fill up
-                process.ErrorDataReceived += delegate { };
+                System.Text.StringBuilder stderr = new System.Text.StringBuilder();
+                process.ErrorDataReceived += delegate (object sender, DataReceivedEventArgs e)
+                {
+                    if (e.Data != null)
+                    {
+                        lock (stderr)
+                        {
+                            stderr.AppendLine(e.Data);
+                        }
+                    }
+                };
                 process.BeginErrorReadLine();
                 output = process.StandardOutput.ReadToEnd();
 
@@ -160,9 +179,16 @@ namespace Web.Management.PHP.Install
                     catch (InvalidOperationException)
                     {
                     }
+                    errors = String.Empty;
                     return -1;
                 }
 
+                // Wait for the asynchronous stderr reader to finish
+                process.WaitForExit();
+                lock (stderr)
+                {
+                    errors = stderr.ToString();
+                }
                 return process.ExitCode;
             }
         }

@@ -40,6 +40,7 @@ namespace Web.Management.PHP.Settings
         private Label _messageLabel;
 
         private string _activeHandlerName;
+        private string _sourceHandlerName;
         private RemoteObjectCollection<PHPIniMigrationItem> _items;
         private bool _busy;
 
@@ -157,6 +158,7 @@ namespace Web.Management.PHP.Settings
             {
                 ((PHPIniMigrationItem)listItem.Tag).Selected = listItem.Checked;
             }
+            _sourceHandlerName = ((PHPVersion)_sourceComboBox.SelectedItem).HandlerName;
 
             SetBusy(true);
             StartAsyncTask(OnApplyDoWork, OnApplyCompleted);
@@ -164,7 +166,7 @@ namespace Web.Management.PHP.Settings
 
         private void OnApplyDoWork(object sender, DoWorkEventArgs e)
         {
-            _module.Proxy.ApplyIniMigration(_items);
+            _module.Proxy.ApplyIniMigration(_sourceHandlerName, _items);
         }
 
         private void OnApplyCompleted(object sender, RunWorkerCompletedEventArgs e)

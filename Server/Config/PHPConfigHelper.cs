@@ -1055,9 +1055,26 @@ namespace Web.Management.PHP.Config
             }
         }
 
-        public void ApplyIniMigration(IEnumerable<PHPIniMigrationItem> items)
+        /// <summary>
+        /// Copies the selected items from the php.ini used by sourceHandlerName. The items are computed again
+        /// here: from the caller only the selection (kind and name) is used, never values, statuses or URLs.
+        /// </summary>
+        public void ApplyIniMigration(string sourceHandlerName, IEnumerable<PHPIniMigrationItem> selection)
         {
             EnsurePHPIsRegistered();
+
+            Dictionary<string, bool> selected = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+            foreach (PHPIniMigrationItem item in selection)
+            {
+                selected[item.Kind.ToString(CultureInfo.InvariantCulture) + "|" + item.Name] = item.Selected;
+            }
+
+            RemoteObjectCollection<PHPIniMigrationItem> items = GetIniMigrationPreview(sourceHandlerName);
+            foreach (PHPIniMigrationItem item in items)
+            {
+                bool isSelected;
+                item.Selected = selected.TryGetValue(item.Kind.ToString(CultureInfo.InvariantCulture) + "|" + item.Name, out isSelected) && isSelected;
+            }
 
             PHPIniFile file = GetPHPIniFile();
             PHPIniMigrator.Apply(file, items, PHPDirectory, GetExtensionDirectory(file, PHPDirectory));
@@ -1127,16 +1144,25 @@ namespace Web.Management.PHP.Config
             return build;
         }
 
-        public string InstallPECLExtension(PECLPackage package, bool overwrite)
+        public string InstallPECLExtension(PECLPackage requested, bool overwrite)
         {
+            // Only the extension name and version are taken from the caller: the download URL is the
+            // one of the PECL build compatible with the active PHP version, found on downloads.php.net
             PHPBuildInfo build = GetPHPBuildInfo();
-            if (!String.Equals(package.PHPBranch, build.Branch, StringComparison.Ordinal) ||
-                package.ThreadSafe != build.ThreadSafe ||
-                !String.Equals(package.Compiler, build.Compiler, StringComparison.OrdinalIgnoreCase) ||
-                !String.Equals(package.Architecture, build.Architecture, StringComparison.OrdinalIgnoreCase))
+            PECLPackage package = null;
+            foreach (PECLPackage candidate in PECLCatalog.GetCompatiblePackages(requested.Name, build))
+            {
+                if (String.Equals(candidate.Version, requested.Version, StringComparison.OrdinalIgnoreCase))
+                {
+                    package = candidate;
+                    break;
+                }
+            }
+
+            if (package == null)
             {
                 throw new PHPInstallException("ErrorExtensionNotCompatible",
-                    String.Format(CultureInfo.InvariantCulture, "{0} is not compatible with PHP {1}.", package.FileName, build.DisplayName));
+                    String.Format(CultureInfo.InvariantCulture, "{0} {1} is not available for PHP {2}.", requested.Name, requested.Version, build.DisplayName));
             }
 
             PHPIniFile file = GetPHPIniFile();
@@ -1155,14 +1181,30 @@ namespace Web.Management.PHP.Config
         /// </summary>
         public string InstallPHPRelease(PHPRelease release, string targetDirectory, bool activate)
         {
+            return InstallPHPRelease(release, targetDirectory, activate, false);
+        }
+
+        /// <summary>
+        /// allowUnverified must be true to install an archived release, which is published without a SHA-256 checksum.
+        /// </summary>
+        public string InstallPHPRelease(PHPRelease release, string targetDirectory, bool activate, bool allowUnverified)
+        {
             if (_registrationType == PHPRegistrationType.NoneNoFastCgi)
             {
                 throw new InvalidOperationException(Resources.FastCgiNotEnabledError);
             }
 
+            // Download URL and checksum always come from downloads.php.net, never from the caller
+            PHPRelease published = PHPReleaseCatalog.FindRelease(release.Version, release.ThreadSafe, release.Compiler, release.Architecture);
+            if (published == null)
+            {
+                throw new PHPInstallException("ErrorCannotInstallPHP",
+                    String.Format(CultureInfo.InvariantCulture, "PHP {0} is not published at {1}.", release.DisplayName, PHPReleaseCatalog.ReleasesUrl));
+            }
+
             string previousHandlerName = IsPHPRegistered() ? _currentPHPHandler.Name : null;
 
-            string phpCgiPath = PHPInstaller.DownloadAndExtract(release, targetDirectory);
+            string phpCgiPath = PHPInstaller.DownloadAndExtract(published, targetDirectory, allowUnverified);
             RegisterPHPWithIIS(phpCgiPath);
 
             string newHandlerName = _currentPHPHandler.Name;

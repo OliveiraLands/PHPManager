@@ -444,7 +444,7 @@ namespace Web.Management.PHP
         }
 
         [ModuleServiceMethod(PassThrough = Passthrough)]
-        public void ApplyIniMigration(object itemsData)
+        public void ApplyIniMigration(string sourceHandlerName, object itemsData)
         {
             EnsureServerConnection();
 
@@ -453,7 +453,7 @@ namespace Web.Management.PHP
 
             try
             {
-                CreateConfigHelper().ApplyIniMigration(items);
+                CreateConfigHelper().ApplyIniMigration(sourceHandlerName, items);
             }
             catch (Exception ex)
             {
@@ -603,7 +603,7 @@ namespace Web.Management.PHP
         }
 
         [ModuleServiceMethod(PassThrough = Passthrough)]
-        public string InstallPHPRelease(object releaseData, string targetDirectory, bool activate)
+        public string InstallPHPRelease(object releaseData, string targetDirectory, bool activate, bool allowUnverified)
         {
             EnsureServerConnection();
 
@@ -613,7 +613,7 @@ namespace Web.Management.PHP
             string result = null;
             try
             {
-                result = CreateConfigHelper().InstallPHPRelease(release, targetDirectory, activate);
+                result = CreateConfigHelper().InstallPHPRelease(release, targetDirectory, activate, allowUnverified);
             }
             catch (Exception ex)
             {

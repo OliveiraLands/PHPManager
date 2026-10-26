@@ -127,9 +127,9 @@ namespace Web.Management.PHP
             Invoke("UpdateExtensions", extensions.GetData());
         }
 
-        internal void ApplyIniMigration(RemoteObjectCollection<PHPIniMigrationItem> items)
+        internal void ApplyIniMigration(string sourceHandlerName, RemoteObjectCollection<PHPIniMigrationItem> items)
         {
-            Invoke("ApplyIniMigration", items.GetData());
+            Invoke("ApplyIniMigration", sourceHandlerName, items.GetData());
         }
 
         internal PHPRelease CheckForPHPUpdate()
@@ -199,9 +199,9 @@ namespace Web.Management.PHP
             return (string)Invoke("InstallPECLExtension", package.GetData(), overwrite);
         }
 
-        internal string InstallPHPRelease(PHPRelease release, string targetDirectory, bool activate)
+        internal string InstallPHPRelease(PHPRelease release, string targetDirectory, bool activate, bool allowUnverified)
         {
-            return (string)Invoke("InstallPHPRelease", release.GetData(), targetDirectory, activate);
+            return (string)Invoke("InstallPHPRelease", release.GetData(), targetDirectory, activate, allowUnverified);
         }
 
         internal bool IsPHPBranchSupported()

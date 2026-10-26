@@ -198,6 +198,12 @@ namespace Web.Management.PHP.Install
                     continue;
                 }
 
+                // A line break in a name or value would add extra directives to php.ini
+                if (ContainsLineBreak(item.Name) || ContainsLineBreak(item.SourceValue) || ContainsLineBreak(item.Section))
+                {
+                    continue;
+                }
+
                 if (item.Status == PHPIniMigrationStatus.AvailableFromPECL)
                 {
                     PECLPackage package = item.PECLPackage;
@@ -274,6 +280,11 @@ namespace Web.Management.PHP.Install
                     File.Copy(file, target);
                 }
             }
+        }
+
+        private static bool ContainsLineBreak(string value)
+        {
+            return value != null && value.IndexOfAny(new char[] { '\r', '\n', '\0' }) >= 0;
         }
 
         private static bool BelongsToExtension(string directive, HashSet<string> extensionNames)

@@ -2389,5 +2389,50 @@ namespace Web.Management.PHP {
                 return ResourceManager.GetString("MigrateIniStatusAvailableFromPECL", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The installation folder is not valid. Use an absolute folder on a local fixed drive, for example under Program Files (UNC paths, drive roots and the Windows folder are not allowed)..
+        /// </summary>
+        internal static string ErrorInvalidInstallFolder {
+            get {
+                return ResourceManager.GetString("ErrorInvalidInstallFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The downloaded package is incomplete or damaged and was not installed..
+        /// </summary>
+        internal static string ErrorPackageCorrupted {
+            get {
+                return ResourceManager.GetString("ErrorPackageCorrupted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This PHP release is published without a SHA-256 checksum, so its integrity cannot be verified..
+        /// </summary>
+        internal static string ErrorPackageNotVerified {
+            get {
+                return ResourceManager.GetString("ErrorPackageNotVerified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The extension was not installed because it could not be loaded by the active PHP version..
+        /// </summary>
+        internal static string ErrorExtensionVerificationFailed {
+            get {
+                return ResourceManager.GetString("ErrorExtensionVerificationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This is an older PHP release that is published without a SHA-256 checksum, so the integrity of the download cannot be verified (it is only protected by HTTPS). Install it anyway?.
+        /// </summary>
+        internal static string InstallPHPDialogConfirmUnverified {
+            get {
+                return ResourceManager.GetString("InstallPHPDialogConfirmUnverified", resourceCulture);
+            }
+        }
     }
 }

@@ -57,6 +57,7 @@ namespace Web.Management.PHP.Setup
         private PHPRelease _releaseToInstall;
         private string _folderToInstall;
         private bool _activateToInstall;
+        private bool _allowUnverified;
 
         public InstallPHPDialog(PHPModule module, bool isLocalConnection) : base(module)
         {
@@ -290,6 +291,17 @@ namespace Web.Management.PHP.Setup
 
         protected override void OnAccept()
         {
+            // Archived releases have no published checksum: the administrator must accept the risk explicitly
+            _allowUnverified = false;
+            if (String.IsNullOrEmpty(SelectedRelease.Sha256))
+            {
+                if (ShowMessage(Resources.InstallPHPDialogConfirmUnverified, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+                {
+                    return;
+                }
+                _allowUnverified = true;
+            }
+
             _releaseToInstall = SelectedRelease;
             _folderToInstall = _folderTextBox.Text.Trim();
             _activateToInstall = _activateCheckBox.Checked;
@@ -357,7 +369,7 @@ namespace Web.Management.PHP.Setup
 
         private void OnInstallDoWork(object sender, DoWorkEventArgs e)
         {
-            e.Result = _module.Proxy.InstallPHPRelease(_releaseToInstall, _folderToInstall, _activateToInstall);
+            e.Result = _module.Proxy.InstallPHPRelease(_releaseToInstall, _folderToInstall, _activateToInstall, _allowUnverified);
         }
 
         private void OnInstallCompleted(object sender, RunWorkerCompletedEventArgs e)

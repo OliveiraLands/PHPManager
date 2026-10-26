@@ -51,7 +51,7 @@ namespace Web.Management.PHP.Powershell
 
                 if (items.Count > 0 && ShouldProcess(configHelper.PHPIniFilePath, "Copy php.ini settings from " + SourceHandlerName))
                 {
-                    configHelper.ApplyIniMigration(items);
+                    configHelper.ApplyIniMigration(SourceHandlerName, items);
                 }
             }
         }

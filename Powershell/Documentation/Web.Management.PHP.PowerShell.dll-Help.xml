@@ -2510,7 +2510,7 @@ C:\PS&gt;			</maml:introduction>
       <dev:version />
     </command:details>
     <maml:description>
-      <maml:para>The Install-PHPVersion cmdlet downloads a PHP for Windows build from downloads.php.net, verifies its SHA-256 checksum when it is published, extracts it to the specified folder and registers it with IIS in the same way as New-PHPVersion. The new version becomes active only when Activate is specified. The folder must be empty or not exist.</maml:para>
+      <maml:para>The Install-PHPVersion cmdlet downloads a PHP for Windows build from downloads.php.net, verifies its SHA-256 checksum, checks that the download is complete, extracts it, checks that the extracted PHP is the requested build to the specified folder and registers it with IIS in the same way as New-PHPVersion. The new version becomes active only when Activate is specified. The folder must be empty or not exist; its permissions are set so that only administrators can change the PHP files. Archived releases are published without a checksum and are refused unless AllowUnverified is specified.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -2542,6 +2542,13 @@ C:\PS&gt;			</maml:introduction>
             <maml:para>x64 (default) or x86.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>AllowUnverified</maml:name>
+          <maml:description>
+            <maml:para>Allows the installation of an archived release, which is published without a SHA-256 checksum. The download is then only protected by HTTPS.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
           <maml:name>Activate</maml:name>
@@ -2614,6 +2621,19 @@ C:\PS&gt;			</maml:introduction>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>AllowUnverified</maml:name>
+        <maml:description>
+          <maml:para>Allows the installation of an archived release, which is published without a SHA-256 checksum. The download is then only protected by HTTPS.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>
@@ -3028,7 +3048,7 @@ C:\PS&gt;			</maml:introduction>
       <dev:version />
     </command:details>
     <maml:description>
-      <maml:para>The Install-PHPExtension cmdlet downloads the PECL build of an extension that matches the active PHP version, copies php_&lt;name&gt;.dll to the extension directory and any dependency DLL to the PHP folder (existing DLLs of PHP are never replaced), and enables the extension in php.ini.</maml:para>
+      <maml:para>The Install-PHPExtension cmdlet downloads the PECL build of an extension that matches the active PHP version, checks it (complete HTTPS download, valid zip, Windows DLLs for the right architecture, and the extension must load in the active PHP version, because PECL builds are published without checksums), then copies php_&lt;name&gt;.dll to the extension directory and any dependency DLL to the PHP folder (existing DLLs of PHP are never replaced), and enables the extension in php.ini.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>

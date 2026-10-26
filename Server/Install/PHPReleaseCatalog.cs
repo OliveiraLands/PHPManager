@@ -95,6 +95,29 @@ namespace Web.Management.PHP.Install
         }
 
         /// <summary>
+        /// Finds a release published at downloads.php.net. Used to never trust download URLs and
+        /// checksums sent by a client: only the version, thread safety, compiler and architecture are taken.
+        /// </summary>
+        public static PHPRelease FindRelease(string version, bool threadSafe, string compiler, string architecture)
+        {
+            foreach (bool includeArchives in new bool[] { false, true })
+            {
+                foreach (PHPRelease release in GetReleases(includeArchives))
+                {
+                    if (String.Equals(release.Version, version, StringComparison.Ordinal) &&
+                        release.ThreadSafe == threadSafe &&
+                        String.Equals(release.Compiler, compiler, StringComparison.OrdinalIgnoreCase) &&
+                        String.Equals(release.Architecture, architecture, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return release;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// True when the branch of the given build is still listed as supported on downloads.php.net.
         /// </summary>
         public static bool IsBranchSupported(PHPBuildInfo build)

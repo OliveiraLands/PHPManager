@@ -33,6 +33,9 @@ namespace Web.Management.PHP.Install
         private static List<string> _namesCache;
         private static DateTime _namesCacheTime;
 
+        private static readonly Regex ExtensionNameRegex = new Regex(@"^[A-Za-z0-9_][A-Za-z0-9_\-]*$");
+        private static readonly Regex VersionRegex = new Regex(@"^[0-9][A-Za-z0-9_.\-]*$");
+
         private static readonly Regex FolderRegex = new Regex(@"href=""(?<name>[A-Za-z0-9_.\-]+)/""", RegexOptions.IgnoreCase);
 
         /// <summary>
@@ -79,11 +82,19 @@ namespace Web.Management.PHP.Install
                 throw new ArgumentNullException("extensionName");
             }
 
+            // The name comes from the user: accept only names that can exist in the PECL index
+            if (!ExtensionNameRegex.IsMatch(extensionName))
+            {
+                throw new ArgumentException("Invalid extension name.", "extensionName");
+            }
+
             string extensionUrl = PECLUrl + Uri.EscapeDataString(extensionName) + "/";
             List<string> versions = GetFolders(extensionUrl);
+            // Stable versions first (most recent first), then alpha/beta/RC versions
             versions.Sort(delegate (string x, string y)
             {
-                return PHPBuildInfo.ParseVersion(y).CompareTo(PHPBuildInfo.ParseVersion(x));
+                int order = IsPrerelease(x).CompareTo(IsPrerelease(y));
+                return (order != 0) ? order : PHPBuildInfo.ParseVersion(y).CompareTo(PHPBuildInfo.ParseVersion(x));
             });
 
             // php_redis-6.3.0-8.4-nts-vs17-x64.zip
@@ -91,6 +102,8 @@ namespace Web.Management.PHP.Install
                 build.Branch, build.ThreadSafe ? "ts" : "nts", build.Compiler, build.Architecture);
 
             List<PECLPackage> result = new List<PECLPackage>();
+            versions.RemoveAll(delegate (string version) { return !VersionRegex.IsMatch(version) || version.Contains(".."); });
+
             for (int i = 0; i < versions.Count && i < MaxVersionsToInspect && result.Count < MaxPackagesToReturn; i++)
             {
                 string version = versions[i];
@@ -119,6 +132,19 @@ namespace Web.Management.PHP.Install
             }
 
             return result;
+        }
+
+        private static bool IsPrerelease(string version)
+        {
+            foreach (char c in version)
+            {
+                if (Char.IsLetter(c))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static List<string> GetFolders(string url)

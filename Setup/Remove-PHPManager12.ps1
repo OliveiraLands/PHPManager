@@ -6,7 +6,7 @@
   A desinstalacao do 1.2 executa uma acao customizada que carrega o snap-in
   Web.Management.PHP.PowerShell 1.2 (.NET 2.0), que depende do System.Management.Automation 1.0.
   Sem o PowerShell 2.0 essa acao falha com "Error 1001" e a desinstalacao - e tambem a
-  atualizacao para o PHP Manager 1.5 - e desfeita.
+  atualizacao para o PHP Manager 3.0 - e desfeita.
 
   O script desativa apenas essa acao no pacote em cache do 1.2 (com backup) e desinstala o produto.
   Depois rode o PHPManagerForIIS.msi novo normalmente.

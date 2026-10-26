@@ -30,6 +30,20 @@ namespace Web.Management.PHP.Powershell
         private string _architecture = "x64";
         private string _path;
         private SwitchParameter _activate;
+        private SwitchParameter _allowUnverified;
+
+        [Parameter]
+        public SwitchParameter AllowUnverified
+        {
+            get
+            {
+                return _allowUnverified;
+            }
+            set
+            {
+                _allowUnverified = value;
+            }
+        }
 
         [Parameter(Mandatory = true, Position = 0)]
         public string Version
@@ -109,6 +123,18 @@ namespace Web.Management.PHP.Powershell
             }
 
             string path = String.IsNullOrEmpty(Path) ? PHPInstaller.GetDefaultInstallDirectory(release) : GetUnresolvedProviderPathFromPSPath(Path);
+            if (String.IsNullOrEmpty(release.Sha256))
+            {
+                if (!AllowUnverified.IsPresent)
+                {
+                    ReportTerminatingError(new PHPInstallException("ErrorPackageNotVerified",
+                        "PHP " + release.Version + " is an archived release published without a SHA-256 checksum, so its integrity cannot be verified. Use -AllowUnverified to install it anyway."),
+                        "PackageNotVerified", ErrorCategory.SecurityError);
+                    return;
+                }
+                WriteWarning("PHP " + release.Version + " is an archived release published without a SHA-256 checksum; the download is only protected by HTTPS.");
+            }
+
             if (!ShouldProcess(path, "Install PHP " + release.DisplayName))
             {
                 return;
@@ -120,7 +146,7 @@ namespace Web.Management.PHP.Powershell
                 {
                     ServerManagerWrapper serverManagerWrapper = new ServerManagerWrapper(serverManager, this.SiteName, this.VirtualPath);
                     PHPConfigHelper configHelper = new PHPConfigHelper(serverManagerWrapper);
-                    WriteObject(configHelper.InstallPHPRelease(release, path, Activate.IsPresent));
+                    WriteObject(configHelper.InstallPHPRelease(release, path, Activate.IsPresent, AllowUnverified.IsPresent));
                 }
             }
             catch (PHPInstallException ex)

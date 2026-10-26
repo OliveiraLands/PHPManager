@@ -892,4 +892,19 @@
   <data name="MigrateIniStatusAvailableFromPECL" xml:space="preserve">
     <value>Compatible DLL will be installed: {0}</value>
   </data>
+  <data name="ErrorInvalidInstallFolder" xml:space="preserve">
+    <value>The installation folder is not valid. Use an absolute folder on a local fixed drive, for example under Program Files (UNC paths, drive roots and the Windows folder are not allowed).</value>
+  </data>
+  <data name="ErrorPackageCorrupted" xml:space="preserve">
+    <value>The downloaded package is incomplete or damaged and was not installed.</value>
+  </data>
+  <data name="ErrorPackageNotVerified" xml:space="preserve">
+    <value>This PHP release is published without a SHA-256 checksum, so its integrity cannot be verified.</value>
+  </data>
+  <data name="ErrorExtensionVerificationFailed" xml:space="preserve">
+    <value>The extension was not installed because it could not be loaded by the active PHP version.</value>
+  </data>
+  <data name="InstallPHPDialogConfirmUnverified" xml:space="preserve">
+    <value>This is an older PHP release that is published without a SHA-256 checksum, so the integrity of the download cannot be verified (it is only protected by HTTPS). Install it anyway?</value>
+  </data>
 </root>
