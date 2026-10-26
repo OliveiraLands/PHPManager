@@ -18,6 +18,7 @@ This repository is a fork of [RonaldCarter/PHPManager](https://github.com/Ronald
 - [Configure](#configure)
 - [Security and integrity](#security-and-integrity)
 - [Build from source](#build-from-source)
+- [Creating a release](#creating-a-release)
 - [Troubleshooting](#troubleshooting)
 - [Project structure](#project-structure)
 - [License](#license)
@@ -257,6 +258,82 @@ Adjust the MSBuild path to your Visual Studio edition (`vswhere -latest -find MS
 ### WiX version
 
 The installer is pinned to **WiX Toolset 5.0.2**, which is free (MS-RL). WiX 6 and later require organizations above a revenue threshold to pay the [Open Source Maintenance Fee](https://docs.firegiant.com/wix/osmf/). Do not update the `WixToolset.*` NuGet packages unless that fee is covered.
+
+---
+
+## Creating a release
+
+A release is a single file, `PHPManagerForIIS.msi`: all assemblies, the PowerShell help, the license and the icon are embedded in it.
+
+### 1. Update the version numbers
+
+Use the same version in both places, and always a higher one than the previous release:
+
+| File | Setting | Example |
+|---|---|---|
+| `Setup\PHPManagerSetup.wixproj` | `<ProductVersion>` | `3.0.1` |
+| `SharedAssembyInfo.cs` | `[assembly: AssemblyFileVersion(...)]` | `3.0.1.0` |
+
+Do **not** change `AssemblyVersion` (`1.3.0.0`). If `AssemblyFileVersion` is not increased, Windows Installer keeps the previous assemblies in the GAC and IIS Manager runs the old code.
+
+### 2. Build
+
+Use a clean rebuild in Release:
+
+```bat
+"%ProgramFiles%\Microsoft Visual Studio\18\Professional\MSBuild\Current\Bin\MSBuild.exe" PHPManager.sln -restore -t:Rebuild -p:Configuration=Release
+```
+
+The package is `bin\Release\PHPManagerForIIS.msi`. Do not ship the MSI from `bin\Debug`.
+
+### 3. Check the package
+
+- The build must end without errors.
+- The assemblies must have the new file version:
+
+  ```powershell
+  Get-ChildItem bin\Release\Web.Management.PHP*.dll | Select-Object Name, @{n='FileVersion';e={$_.VersionInfo.FileVersion}}
+  ```
+
+- Optionally inspect the MSI contents with the WiX command line (`dotnet tool install --global wix --version 5.0.2`):
+
+  ```bat
+  wix msi decompile bin\Release\PHPManagerForIIS.msi -o %TEMP%\PHPManagerForIIS.wxs
+  ```
+
+### 4. Test the installation
+
+On a test machine or virtual machine with IIS, CGI and the previous release installed:
+
+1. Install the new MSI as administrator: `msiexec /i PHPManagerForIIS.msi /l*v %TEMP%\install.log`.
+2. Check that *Apps -> Installed apps* shows the new version only (the previous one is replaced).
+3. Check the version in the GAC:
+
+   ```powershell
+   (Get-Item C:\Windows\Microsoft.NET\assembly\GAC_MSIL\Web.Management.PHP.Client\*\Web.Management.PHP.Client.dll).VersionInfo.FileVersion
+   ```
+
+4. Reopen IIS Manager and test the PHP Manager tasks, including *Check phpinfo()*.
+5. Test `Add-PSSnapin PHPManagerSnapin; Get-PHPVersion` in Windows PowerShell 5.1 as administrator.
+6. Uninstall and check that the PHP Manager module disappears from IIS Manager.
+
+### 5. Publish
+
+Commit the version change, tag it and attach the MSI and its SHA-256 checksum to a GitHub release, for example with the GitHub CLI:
+
+```powershell
+$version = '3.0.1'
+git tag "v$version"
+git push origin "v$version"
+(Get-FileHash bin\Release\PHPManagerForIIS.msi -Algorithm SHA256).Hash + '  PHPManagerForIIS.msi' | Set-Content bin\Release\PHPManagerForIIS.msi.sha256
+gh release create "v$version" bin\Release\PHPManagerForIIS.msi bin\Release\PHPManagerForIIS.msi.sha256 --title "PHP Manager for IIS $version" --notes "Release notes"
+```
+
+The MSI is not code signed. If your organization requires it, sign it with `signtool sign` before calculating the checksum.
+
+### Prerequisites are not included
+
+The MSI only checks for the .NET Framework 4.8. The IIS CGI role service and the Microsoft Visual C++ Redistributable must be installed separately (see [Requirements](#requirements)). A single `.exe` that also installs the Visual C++ Redistributable and .NET Framework 4.8 would require an additional WiX bundle (Burn) project.
 
 ---
 
