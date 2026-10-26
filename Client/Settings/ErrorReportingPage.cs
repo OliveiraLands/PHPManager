@@ -29,17 +29,17 @@ namespace Web.Management.PHP.Settings
         private ErrorReportingPreset _errorReportingPreset = ErrorReportingPreset.Undefined;
         private bool _hasChanges;
 
+        // track_errors is not set anymore: it was removed in PHP 8.0, where it is a fatal startup error.
+        // E_ALL includes E_STRICT since PHP 5.4 and E_STRICT is deprecated since PHP 8.4.
         private readonly string[] SettingNames = {
             "error_reporting",
             "display_errors",
-            "track_errors",
             "html_errors",
             "log_errors",
             "fastcgi.logging"
         };
         private readonly string[] SettingsDevValues = {
-            "E_ALL | E_STRICT",
-            "On",
+            "E_ALL",
             "On",
             "On",
             "On",
@@ -49,10 +49,13 @@ namespace Web.Management.PHP.Settings
             "E_ALL & ~E_DEPRECATED",
             "Off",
             "Off",
-            "Off",
             "On",
             "0"
         };
+        private const string LegacyDevErrorReporting = "E_ALL | E_STRICT";
+
+        // track_errors line written by previous versions of this page, removed on the next apply
+        private PHPIniSetting _trackErrorsSetting;
 
         private Label _devMachineLabel;
         private Label _selectServerTypeLabel;
@@ -156,6 +159,11 @@ namespace Web.Management.PHP.Settings
             try
             {
                 Module.Proxy.AddOrUpdateSettings(settings);
+                if (_trackErrorsSetting != null)
+                {
+                    Module.Proxy.RemoveSetting(_trackErrorsSetting);
+                    _trackErrorsSetting = null;
+                }
                 appliedChanges = true;
                 
                 // Update the values used for determining if changes have been made
@@ -481,12 +489,15 @@ namespace Web.Management.PHP.Settings
 
         private void UpdateUI(PHPIniFile file)
         {
+            _trackErrorsSetting = file.GetSetting("track_errors");
+
             PHPIniSetting setting = file.GetSetting(SettingNames[0]);
             string[] settingValues = null;
 
             if (setting != null)
             {
-                if (String.Equals(setting.GetTrimmedValue(), SettingsDevValues[0]))
+                if (String.Equals(setting.GetTrimmedValue(), SettingsDevValues[0]) ||
+                    String.Equals(setting.GetTrimmedValue(), LegacyDevErrorReporting))
                 {
                     _errorReportingPreset = ErrorReportingPreset.Development;
                     settingValues = SettingsDevValues;
@@ -507,6 +518,12 @@ namespace Web.Management.PHP.Settings
                     }
                     i = i + 1;
                 }
+            }
+
+            // A leftover track_errors line breaks PHP 8: show no preset so that applying one removes it
+            if (_trackErrorsSetting != null)
+            {
+                _errorReportingPreset = ErrorReportingPreset.Undefined;
             }
 
             if (_errorReportingPreset == ErrorReportingPreset.Development)

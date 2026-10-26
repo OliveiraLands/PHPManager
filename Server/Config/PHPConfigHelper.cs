@@ -19,6 +19,7 @@ using Microsoft.Win32;
 using Web.Management.PHP.DefaultDocument;
 using Web.Management.PHP.FastCgi;
 using Web.Management.PHP.Handlers;
+using Web.Management.PHP.Install;
 
 namespace Web.Management.PHP.Config
 {
@@ -476,10 +477,15 @@ namespace Web.Management.PHP.Config
 
         private string GetPHPIniFilePath()
         {
+            return GetPHPIniFilePath(_currentPHPHandler, _currentFastCgiApplication);
+        }
+
+        private static string GetPHPIniFilePath(HandlerElement handler, ApplicationElement fastCgiApplication)
+        {
             string directoryPath = String.Empty;
 
             // If PHPRC environment variable is set per FastCGI process then use the path specified there,
-            EnvironmentVariableElement phpRcElement = _currentFastCgiApplication.EnvironmentVariables["PHPRC"];
+            EnvironmentVariableElement phpRcElement = fastCgiApplication.EnvironmentVariables["PHPRC"];
             if (phpRcElement != null && !String.IsNullOrEmpty(phpRcElement.Value))
             {
                 directoryPath = phpRcElement.Value;
@@ -498,10 +504,10 @@ namespace Web.Management.PHP.Config
             // Otherwise use the same path as where PHP executable is located.
             if (String.IsNullOrEmpty(directoryPath))
             {
-                directoryPath = GetPHPIniPathFromRegistry(_currentPHPHandler.Executable);
+                directoryPath = GetPHPIniPathFromRegistry(handler.Executable);
                 if (String.IsNullOrEmpty(directoryPath))
                 {
-                    directoryPath = Path.GetDirectoryName(_currentPHPHandler.Executable);
+                    directoryPath = Path.GetDirectoryName(handler.Executable);
                 }
             }
 
@@ -882,16 +888,19 @@ namespace Web.Management.PHP.Config
             settings.Add(new PHPIniSetting("max_execution_time", "300", "PHP"));
             settings.Add(new PHPIniSetting("display_errors", "Off", "PHP"));
 
-            // Enable the most common PHP extensions
+            // Enable the most common PHP extensions. Only the ones shipped with this PHP version are enabled:
+            // gd2 was renamed to gd in PHP 8.0 and xmlrpc was moved to PECL, for example.
+            string extensionDir = Path.Combine(PHPDirectory, "ext");
             List<PHPIniExtension> extensions = new List<PHPIniExtension>();
-            extensions.Add(new PHPIniExtension("php_curl.dll", true));
-            extensions.Add(new PHPIniExtension("php_gd2.dll", true));
-            extensions.Add(new PHPIniExtension("php_gettext.dll", true));
-            extensions.Add(new PHPIniExtension("php_mysqli.dll", true));
-            extensions.Add(new PHPIniExtension("php_mbstring.dll", true));
-            extensions.Add(new PHPIniExtension("php_openssl.dll", true));
-            extensions.Add(new PHPIniExtension("php_soap.dll", true));
-            extensions.Add(new PHPIniExtension("php_xmlrpc.dll", true));
+            string[] commonExtensions = new string[] { "php_curl.dll", "php_gd2.dll", "php_gd.dll", "php_gettext.dll", "php_mysqli.dll",
+                                                       "php_mbstring.dll", "php_openssl.dll", "php_soap.dll", "php_xmlrpc.dll" };
+            foreach (string commonExtension in commonExtensions)
+            {
+                if (File.Exists(Path.Combine(extensionDir, commonExtension)))
+                {
+                    extensions.Add(new PHPIniExtension(commonExtension, true));
+                }
+            }
 
             file.UpdateExtensions(extensions);
             file.AddOrUpdateSettings(settings);
@@ -1044,6 +1053,192 @@ namespace Web.Management.PHP.Config
             {
                 MakeRecommendedFastCgiChanges();
             }
+        }
+
+        public void ApplyIniMigration(IEnumerable<PHPIniMigrationItem> items)
+        {
+            EnsurePHPIsRegistered();
+
+            PHPIniFile file = GetPHPIniFile();
+            PHPIniMigrator.Apply(file, items, PHPDirectory, GetExtensionDirectory(file, PHPDirectory));
+        }
+
+        /// <summary>
+        /// Returns the latest patch release of the active PHP branch, or null when it is up to date.
+        /// </summary>
+        public PHPRelease CheckForPHPUpdate()
+        {
+            return PHPReleaseCatalog.GetUpdateFor(GetPHPBuildInfo());
+        }
+
+        /// <summary>
+        /// False when the branch of the active PHP version is no longer published (end of life).
+        /// </summary>
+        public bool IsPHPBranchSupported()
+        {
+            return PHPReleaseCatalog.IsBranchSupported(GetPHPBuildInfo());
+        }
+
+        public List<PECLPackage> GetCompatiblePECLPackages(string extensionName)
+        {
+            return PECLCatalog.GetCompatiblePackages(extensionName, GetPHPBuildInfo());
+        }
+
+        private static string GetExtensionDirectory(PHPIniFile file, string phpDirectory)
+        {
+            PHPIniSetting setting = file.GetSetting("extension_dir");
+            if (setting != null)
+            {
+                string value = Environment.ExpandEnvironmentVariables(setting.GetTrimmedValue());
+                if (Path.IsPathRooted(value))
+                {
+                    return value;
+                }
+            }
+
+            return Path.Combine(phpDirectory, "ext");
+        }
+
+        /// <summary>
+        /// Settings and extensions of the php.ini used by sourceHandlerName that can be copied
+        /// to the php.ini of the active PHP version.
+        /// </summary>
+        public RemoteObjectCollection<PHPIniMigrationItem> GetIniMigrationPreview(string sourceHandlerName)
+        {
+            PHPIniFile sourceFile;
+            string sourceDirectory;
+            OpenHandlerIniFile(sourceHandlerName, out sourceFile, out sourceDirectory);
+
+            PHPIniFile targetFile = GetPHPIniFile();
+            if (String.Equals(sourceFile.FileName, targetFile.FileName, StringComparison.OrdinalIgnoreCase))
+            {
+                return new RemoteObjectCollection<PHPIniMigrationItem>();
+            }
+
+            return PHPIniMigrator.GetPreview(sourceFile, sourceDirectory, targetFile, PHPDirectory, GetExtensionDirectory(targetFile, PHPDirectory));
+        }
+
+        public PHPBuildInfo GetPHPBuildInfo()
+        {
+            EnsurePHPIsRegistered();
+
+            PHPBuildInfo build = PHPBuildDetector.Detect(_currentPHPHandler.Executable);
+            build.HandlerName = _currentPHPHandler.Name;
+            return build;
+        }
+
+        public string InstallPECLExtension(PECLPackage package, bool overwrite)
+        {
+            PHPBuildInfo build = GetPHPBuildInfo();
+            if (!String.Equals(package.PHPBranch, build.Branch, StringComparison.Ordinal) ||
+                package.ThreadSafe != build.ThreadSafe ||
+                !String.Equals(package.Compiler, build.Compiler, StringComparison.OrdinalIgnoreCase) ||
+                !String.Equals(package.Architecture, build.Architecture, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new PHPInstallException("ErrorExtensionNotCompatible",
+                    String.Format(CultureInfo.InvariantCulture, "{0} is not compatible with PHP {1}.", package.FileName, build.DisplayName));
+            }
+
+            PHPIniFile file = GetPHPIniFile();
+            string extensionFile = PECLInstaller.Install(package, PHPDirectory, GetExtensionDirectory(file, PHPDirectory), overwrite);
+
+            RemoteObjectCollection<PHPIniExtension> extensions = new RemoteObjectCollection<PHPIniExtension>();
+            extensions.Add(new PHPIniExtension(extensionFile, true));
+            UpdateExtensions(extensions);
+
+            return extensionFile;
+        }
+
+        /// <summary>
+        /// Downloads and registers a PHP release. When activate is false the previously active
+        /// PHP version stays active. Returns the name of the new handler mapping.
+        /// </summary>
+        public string InstallPHPRelease(PHPRelease release, string targetDirectory, bool activate)
+        {
+            if (_registrationType == PHPRegistrationType.NoneNoFastCgi)
+            {
+                throw new InvalidOperationException(Resources.FastCgiNotEnabledError);
+            }
+
+            string previousHandlerName = IsPHPRegistered() ? _currentPHPHandler.Name : null;
+
+            string phpCgiPath = PHPInstaller.DownloadAndExtract(release, targetDirectory);
+            RegisterPHPWithIIS(phpCgiPath);
+
+            string newHandlerName = _currentPHPHandler.Name;
+            if (!activate && previousHandlerName != null &&
+                !String.Equals(previousHandlerName, newHandlerName, StringComparison.OrdinalIgnoreCase))
+            {
+                SelectPHPHandler(previousHandlerName);
+            }
+
+            return newHandlerName;
+        }
+
+        private void OpenHandlerIniFile(string handlerName, out PHPIniFile file, out string phpDirectory)
+        {
+            EnsurePHPIsRegistered();
+
+            HandlerElement handler = _handlersCollection.GetHandlerByNameAndPath(handlerName, "*.php");
+            if (handler == null)
+            {
+                throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "PHP handler mapping {0} was not found.", handlerName), "handlerName");
+            }
+
+            ApplicationElement fastCgiApplication = _fastCgiApplicationCollection.GetApplication(handler.Executable, handler.Arguments);
+            if (fastCgiApplication == null)
+            {
+                throw new InvalidOperationException(Resources.PhpNotRegisteredError);
+            }
+
+            string phpIniFilePath = GetPHPIniFilePath(handler, fastCgiApplication);
+            if (String.IsNullOrEmpty(phpIniFilePath))
+            {
+                throw new FileNotFoundException(String.Format(Resources.CannotFindPhpIniForExecutableError, handler.Executable));
+            }
+
+            file = new PHPIniFile(phpIniFilePath);
+            file.Parse();
+            phpDirectory = EnsureTrailingBackslash(Path.GetDirectoryName(Environment.ExpandEnvironmentVariables(handler.Executable)));
+        }
+
+        /// <summary>
+        /// Side by side upgrade to the latest patch release of the active branch: installs it in a new folder,
+        /// copies the php.ini settings and the extension DLLs that are not part of the official build, and
+        /// activates it. The previous version stays registered. Returns the name of the new handler mapping.
+        /// </summary>
+        public string UpgradePHP(string targetDirectory)
+        {
+            PHPBuildInfo build = GetPHPBuildInfo();
+            PHPRelease release = PHPReleaseCatalog.GetUpdateFor(build);
+            if (release == null)
+            {
+                throw new PHPInstallException("ErrorNoPHPUpdateAvailable",
+                    String.Format(CultureInfo.InvariantCulture, "PHP {0} is already the latest release of the {1} branch.", build.Version, build.Branch));
+            }
+
+            string sourceDirectory = PHPDirectory;
+            PHPIniFile sourceFile = GetPHPIniFile();
+            string sourceExtensionDirectory = GetExtensionDirectory(sourceFile, sourceDirectory);
+
+            if (String.IsNullOrEmpty(targetDirectory))
+            {
+                targetDirectory = PHPInstaller.GetSideBySideDirectory(sourceDirectory, release);
+            }
+
+            string phpCgiPath = PHPInstaller.DownloadAndExtract(release, targetDirectory);
+            RegisterPHPWithIIS(phpCgiPath);
+
+            // The new version is active now: PHPDirectory and PHPIniFilePath point to it
+            PHPIniFile targetFile = GetPHPIniFile();
+            string targetExtensionDirectory = GetExtensionDirectory(targetFile, PHPDirectory);
+            PHPIniMigrator.CopyMissingExtensionFiles(sourceDirectory, sourceExtensionDirectory, PHPDirectory, targetExtensionDirectory);
+
+            targetFile = GetPHPIniFile();
+            RemoteObjectCollection<PHPIniMigrationItem> items = PHPIniMigrator.GetPreview(sourceFile, sourceDirectory, targetFile, PHPDirectory, targetExtensionDirectory);
+            PHPIniMigrator.Apply(targetFile, items, PHPDirectory, targetExtensionDirectory);
+
+            return _currentPHPHandler.Name;
         }
 
         public void RemovePHPIniSetting(PHPIniSetting setting)

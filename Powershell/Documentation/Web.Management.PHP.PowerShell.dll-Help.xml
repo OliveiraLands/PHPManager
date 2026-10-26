@@ -2364,4 +2364,796 @@ C:\PS&gt;			</maml:introduction>
     <maml:relatedLinks>
     </maml:relatedLinks>
   </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Get-PHPAvailableVersion</command:name>
+      <maml:description>
+        <maml:para>Lists the PHP for Windows builds that can be downloaded and installed.</maml:para>
+      </maml:description>
+      <maml:copyright>
+        <maml:para />
+      </maml:copyright>
+      <command:verb>Get</command:verb>
+      <command:noun>PHPAvailableVersion</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>The Get-PHPAvailableVersion cmdlet reads the list of PHP for Windows builds published at https://downloads.php.net/~windows/releases/ (the same files used by the PHP.PHP.* winget packages). By default only the latest release of each supported branch is returned; use IncludeArchives to also list older releases, which are published without a SHA-256 checksum.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-PHPAvailableVersion</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1">
+          <maml:name>Version</maml:name>
+          <maml:description>
+            <maml:para>Version or branch to return, wildcards are allowed, for example 8.4 or 8.4.*.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>IncludeArchives</maml:name>
+          <maml:description>
+            <maml:para>Also returns older patch releases.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>ThreadSafe</maml:name>
+          <maml:description>
+            <maml:para>Returns only thread safe (TS) builds. Use -ThreadSafe:$false to return only non thread safe (NTS) builds, which are recommended for IIS.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>Architecture</maml:name>
+          <maml:description>
+            <maml:para>Returns only builds for this architecture: x64 or x86.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>Version or branch to return, wildcards are allowed, for example 8.4 or 8.4.*.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>IncludeArchives</maml:name>
+        <maml:description>
+          <maml:para>Also returns older patch releases.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>ThreadSafe</maml:name>
+        <maml:description>
+          <maml:para>Returns only thread safe (TS) builds. Use -ThreadSafe:$false to return only non thread safe (NTS) builds, which are recommended for IIS.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>Architecture</maml:name>
+        <maml:description>
+          <maml:para>Returns only builds for this architecture: x64 or x86.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:examples>
+      <command:example>
+        <maml:title>--------------  Example 1 --------------</maml:title>
+        <maml:introduction>
+          <maml:para>C:\PS&gt;</maml:para>
+        </maml:introduction>
+        <dev:code>Get-PHPAvailableVersion -ThreadSafe:$false -Architecture x64</dev:code>
+        <dev:remarks>
+          <maml:para>Lists the latest NTS x64 build of every supported PHP branch.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>--------------  Example 2 --------------</maml:title>
+        <maml:introduction>
+          <maml:para>C:\PS&gt;</maml:para>
+        </maml:introduction>
+        <dev:code>Get-PHPAvailableVersion 8.3.* -IncludeArchives</dev:code>
+        <dev:remarks>
+          <maml:para>Lists all PHP 8.3 builds, including older patch releases.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-PHPVersion</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Install-PHPVersion</command:name>
+      <maml:description>
+        <maml:para>Downloads a PHP version and registers it with IIS.</maml:para>
+      </maml:description>
+      <maml:copyright>
+        <maml:para />
+      </maml:copyright>
+      <command:verb>Install</command:verb>
+      <command:noun>PHPVersion</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>The Install-PHPVersion cmdlet downloads a PHP for Windows build from downloads.php.net, verifies its SHA-256 checksum when it is published, extracts it to the specified folder and registers it with IIS in the same way as New-PHPVersion. The new version becomes active only when Activate is specified. The folder must be empty or not exist.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Install-PHPVersion</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
+          <maml:name>Version</maml:name>
+          <maml:description>
+            <maml:para>A branch (for example 8.4, installs its latest release) or an exact version (for example 8.4.26).</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="2">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>Folder where PHP is extracted. The default is %ProgramFiles%\PHP\&lt;version&gt;-&lt;ts|nts&gt;-&lt;architecture&gt;.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>ThreadSafe</maml:name>
+          <maml:description>
+            <maml:para>Installs the thread safe (TS) build. The default is the non thread safe (NTS) build, which is recommended for IIS.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>Architecture</maml:name>
+          <maml:description>
+            <maml:para>x64 (default) or x86.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>Activate</maml:name>
+          <maml:description>
+            <maml:para>Makes the installed version the active PHP version.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>SiteName</maml:name>
+          <maml:description>
+            <maml:para>Specifies a name of existing web site. If this parameter is not specified then PHP configuration on a server level will be used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>VirtualPath</maml:name>
+          <maml:description>
+            <maml:para>Specifies a path within a web site. If this parameter is not specified then the root directory of the web site will be used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>A branch (for example 8.4, installs its latest release) or an exact version (for example 8.4.26).</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="2">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>Folder where PHP is extracted. The default is %ProgramFiles%\PHP\&lt;version&gt;-&lt;ts|nts&gt;-&lt;architecture&gt;.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>ThreadSafe</maml:name>
+        <maml:description>
+          <maml:para>Installs the thread safe (TS) build. The default is the non thread safe (NTS) build, which is recommended for IIS.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>Architecture</maml:name>
+        <maml:description>
+          <maml:para>x64 (default) or x86.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>Activate</maml:name>
+        <maml:description>
+          <maml:para>Makes the installed version the active PHP version.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>SiteName</maml:name>
+        <maml:description>
+          <maml:para>Specifies a name of existing web site. If this parameter is not specified then PHP configuration on a server level will be used.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>VirtualPath</maml:name>
+        <maml:description>
+          <maml:para>Specifies a path within a web site. If this parameter is not specified then the root directory of the web site will be used.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:examples>
+      <command:example>
+        <maml:title>--------------  Example 1 --------------</maml:title>
+        <maml:introduction>
+          <maml:para>C:\PS&gt;</maml:para>
+        </maml:introduction>
+        <dev:code>Install-PHPVersion 8.4 -Activate</dev:code>
+        <dev:remarks>
+          <maml:para>Installs the latest PHP 8.4 NTS x64 build to C:\Program Files\PHP and makes it active.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>--------------  Example 2 --------------</maml:title>
+        <maml:introduction>
+          <maml:para>C:\PS&gt;</maml:para>
+        </maml:introduction>
+        <dev:code>Install-PHPVersion 8.3.30 D:\PHP\8.3.30 -WhatIf</dev:code>
+        <dev:remarks>
+          <maml:para>Shows what would be installed without downloading anything.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-PHPVersion</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Update-PHPVersion</command:name>
+      <maml:description>
+        <maml:para>Updates the active PHP version to the latest release of its branch.</maml:para>
+      </maml:description>
+      <maml:copyright>
+        <maml:para />
+      </maml:copyright>
+      <command:verb>Update</command:verb>
+      <command:noun>PHPVersion</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>The Update-PHPVersion cmdlet installs the latest patch release of the branch of the active PHP version (same thread safety, compiler and architecture) side by side in a new folder, copies the php.ini settings and the extension DLLs that are not part of the official build, and makes the new version active. The previous version stays registered, so Set-PHPVersion can switch back to it.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Update-PHPVersion</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>Folder for the new version. The default is a folder next to the folder of the active version.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>SiteName</maml:name>
+          <maml:description>
+            <maml:para>Specifies a name of existing web site. If this parameter is not specified then PHP configuration on a server level will be used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>VirtualPath</maml:name>
+          <maml:description>
+            <maml:para>Specifies a path within a web site. If this parameter is not specified then the root directory of the web site will be used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>Folder for the new version. The default is a folder next to the folder of the active version.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>SiteName</maml:name>
+        <maml:description>
+          <maml:para>Specifies a name of existing web site. If this parameter is not specified then PHP configuration on a server level will be used.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>VirtualPath</maml:name>
+        <maml:description>
+          <maml:para>Specifies a path within a web site. If this parameter is not specified then the root directory of the web site will be used.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:examples>
+      <command:example>
+        <maml:title>--------------  Example 1 --------------</maml:title>
+        <maml:introduction>
+          <maml:para>C:\PS&gt;</maml:para>
+        </maml:introduction>
+        <dev:code>Update-PHPVersion</dev:code>
+        <dev:remarks>
+          <maml:para>Updates, for example, PHP 8.4.26 to 8.4.27.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-PHPVersion</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Copy-PHPIniSettings</command:name>
+      <maml:description>
+        <maml:para>Copies php.ini settings and extensions from another PHP version to the active one.</maml:para>
+      </maml:description>
+      <maml:copyright>
+        <maml:para />
+      </maml:copyright>
+      <command:verb>Copy</command:verb>
+      <command:noun>PHPIniSettings</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>The Copy-PHPIniSettings cmdlet compares the php.ini of a registered PHP version with the php.ini of the active PHP version and copies the settings that differ and the extensions that are enabled. Paths that point to the folder of the source version are changed to the folder of the active version. When the DLL of an enabled extension does not exist in the active version, the cmdlet looks for a PECL build compatible with the active version and installs it; if there is none, the extension is returned but not copied. Directives that the active version does not know are also returned but not copied. Use -WhatIf to only list the changes.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Copy-PHPIniSettings</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
+          <maml:name>SourceHandlerName</maml:name>
+          <maml:description>
+            <maml:para>Handler name of the PHP version to copy from, as returned by Get-PHPVersion.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>SiteName</maml:name>
+          <maml:description>
+            <maml:para>Specifies a name of existing web site. If this parameter is not specified then PHP configuration on a server level will be used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>VirtualPath</maml:name>
+          <maml:description>
+            <maml:para>Specifies a path within a web site. If this parameter is not specified then the root directory of the web site will be used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
+        <maml:name>SourceHandlerName</maml:name>
+        <maml:description>
+          <maml:para>Handler name of the PHP version to copy from, as returned by Get-PHPVersion.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>SiteName</maml:name>
+        <maml:description>
+          <maml:para>Specifies a name of existing web site. If this parameter is not specified then PHP configuration on a server level will be used.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>VirtualPath</maml:name>
+        <maml:description>
+          <maml:para>Specifies a path within a web site. If this parameter is not specified then the root directory of the web site will be used.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:examples>
+      <command:example>
+        <maml:title>--------------  Example 1 --------------</maml:title>
+        <maml:introduction>
+          <maml:para>C:\PS&gt;</maml:para>
+        </maml:introduction>
+        <dev:code>Copy-PHPIniSettings php-8.3.30 -WhatIf</dev:code>
+        <dev:remarks>
+          <maml:para>Lists the settings and extensions that would be copied from PHP 8.3.30.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-PHPVersion</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Find-PHPExtension</command:name>
+      <maml:description>
+        <maml:para>Searches the Windows builds of PECL extensions.</maml:para>
+      </maml:description>
+      <maml:copyright>
+        <maml:para />
+      </maml:copyright>
+      <command:verb>Find</command:verb>
+      <command:noun>PHPExtension</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>The Find-PHPExtension cmdlet lists the PECL extensions with Windows builds published at https://downloads.php.net/~windows/pecl/releases/. With Compatible it returns the builds that match the active PHP version (branch, thread safety, compiler and architecture).</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Find-PHPExtension</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1">
+          <maml:name>Name</maml:name>
+          <maml:description>
+            <maml:para>Extension name, wildcards are allowed.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>Compatible</maml:name>
+          <maml:description>
+            <maml:para>Returns the builds compatible with the active PHP version instead of the extension names.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>SiteName</maml:name>
+          <maml:description>
+            <maml:para>Specifies a name of existing web site. If this parameter is not specified then PHP configuration on a server level will be used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>VirtualPath</maml:name>
+          <maml:description>
+            <maml:para>Specifies a path within a web site. If this parameter is not specified then the root directory of the web site will be used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1">
+        <maml:name>Name</maml:name>
+        <maml:description>
+          <maml:para>Extension name, wildcards are allowed.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>Compatible</maml:name>
+        <maml:description>
+          <maml:para>Returns the builds compatible with the active PHP version instead of the extension names.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>SiteName</maml:name>
+        <maml:description>
+          <maml:para>Specifies a name of existing web site. If this parameter is not specified then PHP configuration on a server level will be used.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>VirtualPath</maml:name>
+        <maml:description>
+          <maml:para>Specifies a path within a web site. If this parameter is not specified then the root directory of the web site will be used.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:examples>
+      <command:example>
+        <maml:title>--------------  Example 1 --------------</maml:title>
+        <maml:introduction>
+          <maml:para>C:\PS&gt;</maml:para>
+        </maml:introduction>
+        <dev:code>Find-PHPExtension redis -Compatible</dev:code>
+        <dev:remarks>
+          <maml:para>Lists the redis builds that can be installed on the active PHP version.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-PHPVersion</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Install-PHPExtension</command:name>
+      <maml:description>
+        <maml:para>Installs a PECL extension compatible with the active PHP version.</maml:para>
+      </maml:description>
+      <maml:copyright>
+        <maml:para />
+      </maml:copyright>
+      <command:verb>Install</command:verb>
+      <command:noun>PHPExtension</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>The Install-PHPExtension cmdlet downloads the PECL build of an extension that matches the active PHP version, copies php_&lt;name&gt;.dll to the extension directory and any dependency DLL to the PHP folder (existing DLLs of PHP are never replaced), and enables the extension in php.ini.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Install-PHPExtension</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
+          <maml:name>Name</maml:name>
+          <maml:description>
+            <maml:para>Extension name, for example redis.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="2">
+          <maml:name>Version</maml:name>
+          <maml:description>
+            <maml:para>Extension version. The default is the most recent compatible version.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>Replaces the extension DLL if it already exists.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>SiteName</maml:name>
+          <maml:description>
+            <maml:para>Specifies a name of existing web site. If this parameter is not specified then PHP configuration on a server level will be used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+          <maml:name>VirtualPath</maml:name>
+          <maml:description>
+            <maml:para>Specifies a path within a web site. If this parameter is not specified then the root directory of the web site will be used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
+        <maml:name>Name</maml:name>
+        <maml:description>
+          <maml:para>Extension name, for example redis.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="2">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>Extension version. The default is the most recent compatible version.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>Replaces the extension DLL if it already exists.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>SiteName</maml:name>
+        <maml:description>
+          <maml:para>Specifies a name of existing web site. If this parameter is not specified then PHP configuration on a server level will be used.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
+        <maml:name>VirtualPath</maml:name>
+        <maml:description>
+          <maml:para>Specifies a path within a web site. If this parameter is not specified then the root directory of the web site will be used.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>
+        </dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:examples>
+      <command:example>
+        <maml:title>--------------  Example 1 --------------</maml:title>
+        <maml:introduction>
+          <maml:para>C:\PS&gt;</maml:para>
+        </maml:introduction>
+        <dev:code>Install-PHPExtension redis</dev:code>
+        <dev:remarks>
+          <maml:para>Installs and enables the most recent redis build for the active PHP version.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-PHPVersion</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
 </helpItems>

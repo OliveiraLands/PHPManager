@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  PHP Manager for IIS - instalador MSI (WiX Toolset v5).
+  Conversao do antigo PHPManagerSetup.vdproj mantendo o mesmo comportamento:
+  - pacote x64, por maquina, UpgradeCode original (substitui versoes anteriores);
+  - assemblies no GAC + copia em [ProgramFiles64Folder]PHP Manager for IIS;
+  - classes Installer executadas pelo InstallUtil (registro do modulo no IIS Manager
+    e do snap-in do PowerShell), na instalacao e na desinstalacao;
+  - HKLM\Software\PHP Manager for IIS\Version.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+     xmlns:netfx="http://wixtoolset.org/schemas/v4/wxs/netfx">
+
+  <Package Name="PHP Manager for IIS"
+           Manufacturer="Ronald Carter"
+           Version="$(var.ProductVersion)"
+           UpgradeCode="{BE0493CC-B6E5-45DA-B7E8-361D3E8164E0}"
+           Language="1033"
+           Scope="perMachine">
+
+    <SummaryInformation Description="PHPManagerForIIS" />
+
+    <!-- Always replace the files of this product, even when a rebuild has the same file version;
+         otherwise Windows Installer keeps the previous build of the assemblies in the GAC. -->
+    <Property Id="REINSTALLMODE" Value="amus" />
+
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+                  DowngradeErrorMessage="Unable to install because a newer version of this product is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Condicoes de inicializacao (x64 Check e .NET Framework) -->
+    <Launch Condition="VersionNT64"
+            Message="The installation package is not supported by this processor type. Make sure you are installing the correct version (x86 or x64) on this machine." />
+    <PropertyRef Id="WIX_IS_NETFRAMEWORK_48_OR_LATER_INSTALLED" />
+    <Launch Condition="Installed OR WIX_IS_NETFRAMEWORK_48_OR_LATER_INSTALLED"
+            Message="This setup requires the .NET Framework version 4.8. Please install the .NET Framework and run this setup again." />
+
+    <!-- Adicionar/Remover Programas -->
+    <Icon Id="ProductIcon" SourceFile="php-logo16.ico" />
+    <Property Id="ARPPRODUCTICON" Value="ProductIcon" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/RonaldCarter/PHPManager" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/RonaldCarter/PHPManager" />
+    <Property Id="ARPCONTACT" Value="Ronald Carter" />
+    <Property Id="ARPCOMMENTS" Value="PHP Manager for IIS is an IIS extension for managing PHP configuration." />
+
+    <!-- Interface: boas-vindas/licenca, progresso e conclusao -->
+    <ui:WixUI Id="WixUI_Minimal" />
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="!(bind.Property.ProductName)">
+        <Directory Id="GACFOLDER" Name="GAC" />
+      </Directory>
+    </StandardDirectory>
+
+    <Feature Id="DefaultFeature" Title="PHP Manager for IIS" Level="1">
+      <ComponentGroupRef Id="ApplicationFiles" />
+      <ComponentGroupRef Id="GlobalAssemblyCache" />
+      <ComponentRef Id="ProductRegistry" />
+    </Feature>
+
+    <!-- Arquivos na pasta de instalacao -->
+    <ComponentGroup Id="ApplicationFiles" Directory="INSTALLFOLDER">
+      <Component>
+        <File Id="Setup.dll" Source="$(var.BinDir)Web.Management.PHP.Setup.dll" KeyPath="yes" />
+        <RemoveFile Id="RemoveInstallState" Name="*.InstallState" On="uninstall" />
+        <RemoveFile Id="RemoveInstallLog" Name="*.InstallLog" On="uninstall" />
+      </Component>
+      <Component>
+        <File Id="PowerShell.dll" Source="$(var.BinDir)Web.Management.PHP.PowerShell.dll" KeyPath="yes" />
+      </Component>
+      <Component>
+        <File Id="PowerShell.Help.xml" Source="$(var.BinDir)Web.Management.PHP.PowerShell.dll-Help.xml" KeyPath="yes" />
+      </Component>
+      <Component>
+        <File Id="Client.dll" Source="$(var.BinDir)Web.Management.PHP.Client.dll" KeyPath="yes" />
+      </Component>
+      <Component>
+        <File Id="Microsoft.Win32.Primitives.dll" Source="$(var.PackagesDir)Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll" KeyPath="yes" />
+      </Component>
+      <Component>
+        <File Id="License.rtf" Source="License.rtf" KeyPath="yes" />
+      </Component>
+      <Component>
+        <File Id="php_logo16.ico" Source="php-logo16.ico" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- Assemblies registrados no GAC -->
+    <ComponentGroup Id="GlobalAssemblyCache" Directory="GACFOLDER">
+      <Component>
+        <File Id="GAC.Web.Management.PHP.dll" Source="$(var.BinDir)Web.Management.PHP.dll" Assembly=".net" KeyPath="yes" />
+      </Component>
+      <Component>
+        <File Id="GAC.Client.dll" Source="$(var.BinDir)Web.Management.PHP.Client.dll" Assembly=".net" KeyPath="yes" />
+      </Component>
+      <Component>
+        <File Id="GAC.Client.resources.ja_JP.dll" Source="$(var.BinDir)ja-JP\Web.Management.PHP.Client.resources.dll" Assembly=".net" KeyPath="yes" />
+      </Component>
+      <Component>
+        <File Id="GAC.PowerShell.dll" Source="$(var.BinDir)Web.Management.PHP.PowerShell.dll" Assembly=".net" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- HKLM\Software\[ProductName]\Version -->
+    <Component Id="ProductRegistry" Directory="INSTALLFOLDER">
+      <RegistryKey Root="HKLM" Key="Software\[ProductName]" ForceDeleteOnUninstall="yes">
+        <RegistryValue Name="Version" Type="string" Value="$(var.ProductVersion)" KeyPath="yes" />
+      </RegistryKey>
+    </Component>
+
+    <!--
+      Acoes customizadas: executam as classes [RunInstaller] dos assemblies
+      (Web.Management.PHP.Setup.SetupAction e Web.Management.PHP.Powershell.Installer),
+      como o vdproj fazia com "InstallerClass = TRUE".
+    -->
+    <SetProperty Id="RegisterUIModule" Sequence="execute" Before="RegisterUIModule"
+                 Value="&quot;[WindowsFolder]Microsoft.NET\Framework64\v4.0.30319\InstallUtil.exe&quot; /LogToConsole=false /LogFile= &quot;[#Setup.dll]&quot;" />
+    <SetProperty Id="RegisterPowerShellSnapin" Sequence="execute" Before="RegisterPowerShellSnapin"
+                 Value="&quot;[WindowsFolder]Microsoft.NET\Framework64\v4.0.30319\InstallUtil.exe&quot; /LogToConsole=false /LogFile= &quot;[#PowerShell.dll]&quot;" />
+    <SetProperty Id="UnregisterUIModule" Sequence="execute" Before="UnregisterUIModule"
+                 Value="&quot;[WindowsFolder]Microsoft.NET\Framework64\v4.0.30319\InstallUtil.exe&quot; /u /LogToConsole=false /LogFile= &quot;[#Setup.dll]&quot;" />
+    <SetProperty Id="UnregisterPowerShellSnapin" Sequence="execute" Before="UnregisterPowerShellSnapin"
+                 Value="&quot;[WindowsFolder]Microsoft.NET\Framework64\v4.0.30319\InstallUtil.exe&quot; /u /LogToConsole=false /LogFile= &quot;[#PowerShell.dll]&quot;" />
+
+    <CustomAction Id="RegisterUIModule" BinaryRef="Wix4UtilCA_X64" DllEntry="WixQuietExec64" Execute="deferred" Impersonate="no" Return="check" />
+    <CustomAction Id="RegisterPowerShellSnapin" BinaryRef="Wix4UtilCA_X64" DllEntry="WixQuietExec64" Execute="deferred" Impersonate="no" Return="check" />
+    <CustomAction Id="UnregisterUIModule" BinaryRef="Wix4UtilCA_X64" DllEntry="WixQuietExec64" Execute="deferred" Impersonate="no" Return="ignore" />
+    <CustomAction Id="UnregisterPowerShellSnapin" BinaryRef="Wix4UtilCA_X64" DllEntry="WixQuietExec64" Execute="deferred" Impersonate="no" Return="ignore" />
+
+    <InstallExecuteSequence>
+      <Custom Action="UnregisterUIModule" Before="RemoveFiles" Condition="REMOVE~=&quot;ALL&quot;" />
+      <Custom Action="UnregisterPowerShellSnapin" After="UnregisterUIModule" Condition="REMOVE~=&quot;ALL&quot;" />
+      <Custom Action="RegisterUIModule" After="InstallFiles" Condition="NOT REMOVE~=&quot;ALL&quot;" />
+      <Custom Action="RegisterPowerShellSnapin" After="RegisterUIModule" Condition="NOT REMOVE~=&quot;ALL&quot;" />
+    </InstallExecuteSequence>
+
+  </Package>
+</Wix>

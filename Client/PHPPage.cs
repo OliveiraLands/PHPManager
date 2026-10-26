@@ -27,11 +27,18 @@ namespace Web.Management.PHP
         private const int IndexRegisterPHPTask = 0;
         private const int IndexChangeVersionTask = 1;
         private const int IndexCheckPHPInfoTask = 2;
+        private const int IndexInstallPHPTask = 3;
+        private const int IndexCheckUpdateTask = 4;
         private const int IndexErrorReportingTask = 0;
         private const int IndexLimitsTask = 1;
         private const int IndexAllSettingsTask = 2;
+        private const int IndexMigrateSettingsTask = 3;
         private const int IndexAllExtensionsTask = 0;
         private const int IndexAddExtensionTask = 1;
+        private const int IndexInstallExtensionTask = 2;
+
+        // Background check for a newer patch release of the active PHP version
+        private BackgroundWorker _updateCheckWorker;
 
         // Summary labels
         private Label _enabledExtLabel;
@@ -74,6 +81,98 @@ namespace Web.Management.PHP
                 if (ShowDialog(dlg) == DialogResult.OK)
                 {
                     Navigate(typeof(Extensions.AllExtensionsPage), dlg.AddedExtensionName);
+                }
+            }
+        }
+
+        private void CheckForUpdateInBackground()
+        {
+            if (_updateCheckWorker != null && _updateCheckWorker.IsBusy)
+            {
+                return;
+            }
+
+            _updateCheckWorker = new BackgroundWorker();
+            _updateCheckWorker.DoWork += new DoWorkEventHandler(OnUpdateCheckDoWork);
+            _updateCheckWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(OnUpdateCheckCompleted);
+            _updateCheckWorker.RunWorkerAsync();
+        }
+
+        private void InstallExtension()
+        {
+            using (Extensions.InstallExtensionDialog dlg = new Extensions.InstallExtensionDialog(this.Module))
+            {
+                if (ShowDialog(dlg) == DialogResult.OK)
+                {
+                    Navigate(typeof(Extensions.AllExtensionsPage), dlg.InstalledExtensionName);
+                }
+            }
+        }
+
+        private void InstallPHP()
+        {
+            using (Setup.InstallPHPDialog dlg = new Setup.InstallPHPDialog(this.Module, Connection.IsLocalConnection))
+            {
+                if (ShowDialog(dlg) == DialogResult.OK)
+                {
+                    Refresh();
+                }
+            }
+        }
+
+        private void MigrateSettings()
+        {
+            using (Settings.MigrateIniDialog dlg = new Settings.MigrateIniDialog(this.Module))
+            {
+                if (ShowDialog(dlg) == DialogResult.OK)
+                {
+                    Refresh();
+                }
+            }
+        }
+
+        private void OnUpdateCheckDoWork(object sender, DoWorkEventArgs e)
+        {
+            e.Result = Module.Proxy.CheckForPHPUpdate();
+        }
+
+        private void OnUpdateCheckCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            // The update check is a convenience: without internet access it fails silently
+            if (e.Error != null || e.Result == null || IsDisposed)
+            {
+                return;
+            }
+
+            PHPRelease update = (PHPRelease)e.Result;
+            _phpSetupItem.SetWarning(PreparePHPUpdateWarning(update));
+            PerformLayout();
+        }
+
+        private void OnUpdateNowLinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            UpgradePHP();
+        }
+
+        private LinkLabel PreparePHPUpdateWarning(PHPRelease update)
+        {
+            LinkLabel result = new LinkLabel();
+
+            string text = String.Format(CultureInfo.CurrentCulture, Resources.WarningPHPUpdateAvailable, update.Version);
+            result.Text = text + Resources.WarningPHPUpdateNow;
+            result.Links.Add(new LinkLabel.Link(text.Length, Resources.WarningPHPUpdateNow.Length, 0));
+            result.LinkClicked += new LinkLabelLinkClickedEventHandler(OnUpdateNowLinkClicked);
+
+            return result;
+        }
+
+        private void UpgradePHP()
+        {
+            using (Setup.UpgradePHPDialog dlg = new Setup.UpgradePHPDialog(this.Module, Connection.IsLocalConnection))
+            {
+                if (ShowDialog(dlg) == DialogResult.OK)
+                {
+                    Refresh();
                 }
             }
         }
@@ -167,7 +266,9 @@ namespace Web.Management.PHP
             _phpSetupItem.AddTask(OnPHPSetupItemClick,
                                     Resources.PHPSetupItemRegisterPHPTask,
                                     Resources.PHPSetupItemChangeVersionTask,
-                                    Resources.PHPSetupItemCheckPHPInfoTask);
+                                    Resources.PHPSetupItemCheckPHPInfoTask,
+                                    Resources.PHPSetupItemInstallPHPTask,
+                                    Resources.PHPSetupItemCheckUpdateTask);
 
             Controls.Add(_phpSetupItem);
             //
@@ -188,7 +289,8 @@ namespace Web.Management.PHP
                 _phpSettingsItem.AddTask(OnPHPSettingsItemClick,
                                         Resources.PHPSettingsItemErrorReportingTask,
                                         Resources.PHPSettingsItemLimitsTask,
-                                        Resources.PHPSettingsItemAllSettingsTask);
+                                        Resources.PHPSettingsItemAllSettingsTask,
+                                        Resources.PHPSettingsItemMigrateTask);
             }
             else
             {
@@ -215,7 +317,8 @@ namespace Web.Management.PHP
             if (Connection.IsUserServerAdministrator)
             {
                 _phpExtensionItem.AddTask(OnPHPExtensionItemClick,
-                                        Resources.PHPExtensionItemEnableTask, Resources.PHPExtensionItemAddTask);
+                                        Resources.PHPExtensionItemEnableTask, Resources.PHPExtensionItemAddTask,
+                                        Resources.PHPExtensionItemInstallTask);
             }
             else
             {
@@ -341,6 +444,10 @@ namespace Web.Management.PHP
             {
                 AddExtension();
             }
+            if (index == IndexInstallExtensionTask)
+            {
+                InstallExtension();
+            }
         }
 
         private void OnPHPExtensionItemTitleClick(object sender, LinkLabelLinkClickedEventArgs e)
@@ -362,6 +469,10 @@ namespace Web.Management.PHP
             {
                 Navigate(typeof(Settings.AllSettingsPage));
             }
+            if (index == IndexMigrateSettingsTask)
+            {
+                MigrateSettings();
+            }
         }
 
         private void OnPHPSettingsItemTitleClick(object sender, LinkLabelLinkClickedEventArgs e)
@@ -382,6 +493,14 @@ namespace Web.Management.PHP
             else if (index == IndexCheckPHPInfoTask)
             {
                 NavigateToPHPInfo();
+            }
+            else if (index == IndexInstallPHPTask)
+            {
+                InstallPHP();
+            }
+            else if (index == IndexCheckUpdateTask)
+            {
+                UpgradePHP();
             }
         }
 
@@ -584,6 +703,7 @@ namespace Web.Management.PHP
             if (Connection.IsUserServerAdministrator)
             {
                 _phpExtensionItem.SetTaskState(IndexAddExtensionTask, isPHPSetup);
+                _phpExtensionItem.SetTaskState(IndexInstallExtensionTask, isPHPSetup);
             }
         }
 
@@ -605,6 +725,11 @@ namespace Web.Management.PHP
             _phpSettingsItem.SetTaskState(IndexErrorReportingTask, isPHPSetup);
             _phpSettingsItem.SetTaskState(IndexLimitsTask, isPHPSetup);
             _phpSettingsItem.SetTaskState(IndexAllSettingsTask, isPHPSetup);
+
+            if (Connection.IsUserServerAdministrator)
+            {
+                _phpSettingsItem.SetTaskState(IndexMigrateSettingsTask, isPHPSetup);
+            }
         }
 
         private void UpdatePHPSetupItem(PHPConfigInfo configInfo)
@@ -622,6 +747,11 @@ namespace Web.Management.PHP
                 if (!configInfo.IsConfigOptimal && Connection.IsUserServerAdministrator)
                 {
                     _phpSetupItem.SetWarning(PreparePHPConfigWarning());
+                }
+                else if (Connection.IsUserServerAdministrator)
+                {
+                    // Show a warning when a newer patch release (security fixes) is available
+                    CheckForUpdateInBackground();
                 }
             }
             else if (configInfo != null)
@@ -653,6 +783,12 @@ namespace Web.Management.PHP
 
             _phpSetupItem.SetTaskState(IndexChangeVersionTask, isPHPSetup);
             _phpSetupItem.SetTaskState(IndexCheckPHPInfoTask, isPHPSetup);
+
+            // Download and update need server administrator rights and FastCGI
+            bool canInstall = Connection.IsUserServerAdministrator &&
+                              configInfo != null && configInfo.RegistrationType != PHPRegistrationType.NoneNoFastCgi;
+            _phpSetupItem.SetTaskState(IndexInstallPHPTask, canInstall);
+            _phpSetupItem.SetTaskState(IndexCheckUpdateTask, canInstall && isPHPSetup);
         }
 
     }

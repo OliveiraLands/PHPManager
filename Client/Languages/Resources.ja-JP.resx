@@ -682,4 +682,214 @@
   <data name="WarningPHPConfigNoFastCgi" xml:space="preserve">
     <value>PHP を登録するためには、FastCGI を有効化してください。</value>
   </data>
+  <data name="PHPSetupItemInstallPHPTask" xml:space="preserve">
+    <value>Download and install a PHP version</value>
+  </data>
+  <data name="PHPSetupItemCheckUpdateTask" xml:space="preserve">
+    <value>Check for PHP updates</value>
+  </data>
+  <data name="PHPSettingsItemMigrateTask" xml:space="preserve">
+    <value>Copy settings from another PHP version</value>
+  </data>
+  <data name="PHPExtensionItemInstallTask" xml:space="preserve">
+    <value>Install extension from the internet</value>
+  </data>
+  <data name="WarningPHPUpdateAvailable" xml:space="preserve">
+    <value>PHP {0} is available and may contain critical security fixes. </value>
+  </data>
+  <data name="WarningPHPUpdateNow" xml:space="preserve">
+    <value>Update now</value>
+  </data>
+  <data name="CommonBrowseButton" xml:space="preserve">
+    <value>...</value>
+  </data>
+  <data name="InstallPHPDialogTitle" xml:space="preserve">
+    <value>Download and install PHP</value>
+  </data>
+  <data name="InstallPHPDialogVersions" xml:space="preserve">
+    <value>Select the PHP version to install:</value>
+  </data>
+  <data name="InstallPHPDialogBranch" xml:space="preserve">
+    <value>Branch:</value>
+  </data>
+  <data name="InstallPHPDialogAllBranches" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="InstallPHPDialogShowTS" xml:space="preserve">
+    <value>Show thread safe (TS) builds</value>
+  </data>
+  <data name="InstallPHPDialogShowX86" xml:space="preserve">
+    <value>Show x86 builds</value>
+  </data>
+  <data name="InstallPHPDialogShowArchives" xml:space="preserve">
+    <value>Show older releases</value>
+  </data>
+  <data name="InstallPHPDialogColumnVersion" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="InstallPHPDialogColumnBuild" xml:space="preserve">
+    <value>Build</value>
+  </data>
+  <data name="InstallPHPDialogColumnArchitecture" xml:space="preserve">
+    <value>Architecture</value>
+  </data>
+  <data name="InstallPHPDialogColumnCompiler" xml:space="preserve">
+    <value>Compiler</value>
+  </data>
+  <data name="InstallPHPDialogColumnSize" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="InstallPHPDialogColumnChecksum" xml:space="preserve">
+    <value>SHA-256</value>
+  </data>
+  <data name="InstallPHPDialogChecksumVerified" xml:space="preserve">
+    <value>Verified</value>
+  </data>
+  <data name="InstallPHPDialogChecksumNotPublished" xml:space="preserve">
+    <value>Not published</value>
+  </data>
+  <data name="InstallPHPDialogLatest" xml:space="preserve">
+    <value>{0} (latest)</value>
+  </data>
+  <data name="InstallPHPDialogFolder" xml:space="preserve">
+    <value>Install to folder (on the IIS server):</value>
+  </data>
+  <data name="InstallPHPDialogActivate" xml:space="preserve">
+    <value>Make it the active PHP version</value>
+  </data>
+  <data name="InstallPHPDialogNTSHint" xml:space="preserve">
+    <value>Non thread safe (NTS) builds are recommended for IIS with FastCGI.</value>
+  </data>
+  <data name="InstallPHPDialogNoChecksumWarning" xml:space="preserve">
+    <value>Older releases are published without a SHA-256 checksum, so the download cannot be verified.</value>
+  </data>
+  <data name="UpgradePHPDialogTitle" xml:space="preserve">
+    <value>Update PHP</value>
+  </data>
+  <data name="UpgradePHPDialogCurrent" xml:space="preserve">
+    <value>Active PHP version:</value>
+  </data>
+  <data name="UpgradePHPDialogAvailable" xml:space="preserve">
+    <value>Available update:</value>
+  </data>
+  <data name="UpgradePHPDialogChecking" xml:space="preserve">
+    <value>Checking for updates...</value>
+  </data>
+  <data name="UpgradePHPDialogUpToDate" xml:space="preserve">
+    <value>PHP {0} is the latest release of the {1} branch.</value>
+  </data>
+  <data name="UpgradePHPDialogBranchUnsupported" xml:space="preserve">
+    <value>The PHP {0} branch no longer receives security updates. Install a supported version with &quot;Download and install a PHP version&quot; and then use &quot;Copy settings from another PHP version&quot;.</value>
+  </data>
+  <data name="UpgradePHPDialogFolder" xml:space="preserve">
+    <value>Install the update to folder (on the IIS server):</value>
+  </data>
+  <data name="UpgradePHPDialogDescription" xml:space="preserve">
+    <value>The update is installed side by side: the php.ini settings and the extensions are copied from the current version and the new version becomes active. The current version stays registered, so you can switch back with &quot;Change PHP version&quot;.</value>
+  </data>
+  <data name="MigrateIniDialogTitle" xml:space="preserve">
+    <value>Copy php.ini settings</value>
+  </data>
+  <data name="MigrateIniDialogSource" xml:space="preserve">
+    <value>Copy settings from PHP version:</value>
+  </data>
+  <data name="MigrateIniDialogTarget" xml:space="preserve">
+    <value>To the active PHP version: {0}</value>
+  </data>
+  <data name="MigrateIniDialogColumnName" xml:space="preserve">
+    <value>Setting</value>
+  </data>
+  <data name="MigrateIniDialogColumnNewValue" xml:space="preserve">
+    <value>Value to copy</value>
+  </data>
+  <data name="MigrateIniDialogColumnCurrentValue" xml:space="preserve">
+    <value>Current value</value>
+  </data>
+  <data name="MigrateIniDialogColumnStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="MigrateIniDialogExtension" xml:space="preserve">
+    <value>Extension</value>
+  </data>
+  <data name="MigrateIniStatusNew" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="MigrateIniStatusChanged" xml:space="preserve">
+    <value>Different</value>
+  </data>
+  <data name="MigrateIniStatusUnsupported" xml:space="preserve">
+    <value>Not supported by this PHP version</value>
+  </data>
+  <data name="MigrateIniStatusMissingExtension" xml:space="preserve">
+    <value>No compatible DLL for this PHP version</value>
+  </data>
+  <data name="MigrateIniDialogNoOtherVersions" xml:space="preserve">
+    <value>There is no other registered PHP version to copy settings from.</value>
+  </data>
+  <data name="MigrateIniDialogNothingToCopy" xml:space="preserve">
+    <value>Both php.ini files already have the same settings and extensions.</value>
+  </data>
+  <data name="InstallExtensionDialogTitle" xml:space="preserve">
+    <value>Install PHP extension</value>
+  </data>
+  <data name="InstallExtensionDialogBuild" xml:space="preserve">
+    <value>Active PHP build: {0}</value>
+  </data>
+  <data name="InstallExtensionDialogSearch" xml:space="preserve">
+    <value>Search PECL extensions:</value>
+  </data>
+  <data name="InstallExtensionDialogSearchButton" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="InstallExtensionDialogVersion" xml:space="preserve">
+    <value>Compatible version:</value>
+  </data>
+  <data name="InstallExtensionDialogNoCompatible" xml:space="preserve">
+    <value>There is no build of this extension for the active PHP version.</value>
+  </data>
+  <data name="InstallExtensionDialogOverwrite" xml:space="preserve">
+    <value>Replace the extension DLL if it already exists</value>
+  </data>
+  <data name="InstallExtensionDialogSourceInfo" xml:space="preserve">
+    <value>Extensions are downloaded from downloads.php.net (PECL builds for Windows).</value>
+  </data>
+  <data name="ErrorDownloadFailed" xml:space="preserve">
+    <value>Cannot download the file. Make sure the IIS server can access https://downloads.php.net.</value>
+  </data>
+  <data name="ErrorChecksumMismatch" xml:space="preserve">
+    <value>The downloaded file is damaged or was changed: its SHA-256 checksum does not match.</value>
+  </data>
+  <data name="ErrorTargetFolderNotEmpty" xml:space="preserve">
+    <value>The installation folder is not empty. Choose an empty or new folder.</value>
+  </data>
+  <data name="ErrorPHPCannotRun" xml:space="preserve">
+    <value>The installed PHP cannot run. Make sure the latest Microsoft Visual C++ Redistributable is installed.</value>
+  </data>
+  <data name="ErrorNoPHPUpdateAvailable" xml:space="preserve">
+    <value>There is no PHP update available.</value>
+  </data>
+  <data name="ErrorCannotInstallPHP" xml:space="preserve">
+    <value>Cannot install PHP.</value>
+  </data>
+  <data name="ErrorCannotMigrateSettings" xml:space="preserve">
+    <value>Cannot copy the php.ini settings.</value>
+  </data>
+  <data name="ErrorCannotCheckForUpdates" xml:space="preserve">
+    <value>Cannot check for PHP updates.</value>
+  </data>
+  <data name="ErrorCannotGetPHPReleases" xml:space="preserve">
+    <value>Cannot get the list of PHP releases.</value>
+  </data>
+  <data name="ErrorCannotGetExtensions" xml:space="preserve">
+    <value>Cannot get the list of PHP extensions.</value>
+  </data>
+  <data name="ErrorCannotInstallExtension" xml:space="preserve">
+    <value>Cannot install the PHP extension.</value>
+  </data>
+  <data name="ErrorExtensionNotCompatible" xml:space="preserve">
+    <value>The extension is not compatible with the active PHP version.</value>
+  </data>
+  <data name="MigrateIniStatusAvailableFromPECL" xml:space="preserve">
+    <value>Compatible DLL will be installed: {0}</value>
+  </data>
 </root>

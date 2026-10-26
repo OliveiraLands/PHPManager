@@ -1,0 +1,22 @@
+﻿<Project Sdk="WixToolset.Sdk/5.0.2">
+  <!-- Substitui o antigo PHPManagerSetup.vdproj (Visual Studio Installer Project). -->
+  <PropertyGroup>
+    <ProductVersion>3.0.0</ProductVersion>
+    <OutputName>PHPManagerForIIS</OutputName>
+    <OutputType>Package</OutputType>
+    <Platform Condition=" '$(Platform)' == '' or '$(Platform)' == 'AnyCPU' or '$(Platform)' == 'Any CPU' ">x64</Platform>
+    <InstallerPlatform>x64</InstallerPlatform>
+    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+    <BinDir>$(MSBuildThisFileDirectory)..\bin\$(Configuration)\</BinDir>
+    <PackagesDir>$(MSBuildThisFileDirectory)..\packages\</PackagesDir>
+    <DefineConstants>ProductVersion=$(ProductVersion);BinDir=$(BinDir);PackagesDir=$(PackagesDir)</DefineConstants>
+    <!-- ICE61: same-version upgrades are allowed; ICE40: REINSTALLMODE=amus is intentional (see Package.wxs) -->
+    <SuppressIces>ICE61;ICE40</SuppressIces>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Manter em 5.x: a partir do WiX 6 o uso comercial exige a taxa OSMF (https://docs.firegiant.com/wix/osmf/). -->
+    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
+    <PackageReference Include="WixToolset.Netfx.wixext" Version="5.0.2" />
+  </ItemGroup>
+</Project>

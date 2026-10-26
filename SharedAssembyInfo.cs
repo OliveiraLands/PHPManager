@@ -28,5 +28,8 @@ using System.Reflection;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
+// AssemblyVersion is part of the strong name used in administration.config and by the PowerShell snap-in,
+// so it stays stable. AssemblyFileVersion must grow on every release: Windows Installer only replaces
+// an assembly in the GAC when the new file version is higher (keep it equal to the MSI ProductVersion).
 [assembly: AssemblyVersion("1.3.0.0")]
-[assembly: AssemblyFileVersion("1.3.0.0")]
+[assembly: AssemblyFileVersion("3.0.0.0")]

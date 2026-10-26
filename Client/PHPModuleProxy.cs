@@ -127,5 +127,92 @@ namespace Web.Management.PHP
             Invoke("UpdateExtensions", extensions.GetData());
         }
 
+        internal void ApplyIniMigration(RemoteObjectCollection<PHPIniMigrationItem> items)
+        {
+            Invoke("ApplyIniMigration", items.GetData());
+        }
+
+        internal PHPRelease CheckForPHPUpdate()
+        {
+            object o = Invoke("CheckForPHPUpdate");
+            PHPRelease result = null;
+            if (o != null)
+            {
+                result = new PHPRelease();
+                result.SetData(o);
+            }
+            return result;
+        }
+
+        internal RemoteObjectCollection<PHPRelease> GetAvailablePHPReleases(bool includeArchives)
+        {
+            RemoteObjectCollection<PHPRelease> releases = new RemoteObjectCollection<PHPRelease>();
+            object o = Invoke("GetAvailablePHPReleases", includeArchives);
+            if (o != null)
+            {
+                releases.SetData(o);
+            }
+            return releases;
+        }
+
+        internal RemoteObjectCollection<PECLPackage> GetCompatiblePECLPackages(string extensionName)
+        {
+            RemoteObjectCollection<PECLPackage> packages = new RemoteObjectCollection<PECLPackage>();
+            object o = Invoke("GetCompatiblePECLPackages", extensionName);
+            if (o != null)
+            {
+                packages.SetData(o);
+            }
+            return packages;
+        }
+
+        internal RemoteObjectCollection<PHPIniMigrationItem> GetIniMigrationPreview(string sourceHandlerName)
+        {
+            RemoteObjectCollection<PHPIniMigrationItem> items = new RemoteObjectCollection<PHPIniMigrationItem>();
+            object o = Invoke("GetIniMigrationPreview", sourceHandlerName);
+            if (o != null)
+            {
+                items.SetData(o);
+            }
+            return items;
+        }
+
+        internal ArrayList GetPECLExtensionNames(string filter)
+        {
+            return (ArrayList)Invoke("GetPECLExtensionNames", filter);
+        }
+
+        internal PHPBuildInfo GetPHPBuildInfo()
+        {
+            object o = Invoke("GetPHPBuildInfo");
+            PHPBuildInfo result = null;
+            if (o != null)
+            {
+                result = new PHPBuildInfo();
+                result.SetData(o);
+            }
+            return result;
+        }
+
+        internal string InstallPECLExtension(PECLPackage package, bool overwrite)
+        {
+            return (string)Invoke("InstallPECLExtension", package.GetData(), overwrite);
+        }
+
+        internal string InstallPHPRelease(PHPRelease release, string targetDirectory, bool activate)
+        {
+            return (string)Invoke("InstallPHPRelease", release.GetData(), targetDirectory, activate);
+        }
+
+        internal bool IsPHPBranchSupported()
+        {
+            return (bool)Invoke("IsPHPBranchSupported");
+        }
+
+        internal string UpgradePHP(string targetDirectory)
+        {
+            return (string)Invoke("UpgradePHP", targetDirectory);
+        }
+
     }
 }

@@ -28,6 +28,7 @@ namespace Web.Management.PHP.Config
 
         private List<PHPIniBase> _rawEntries;
         private string _filename;
+        private bool _hasByteOrderMark;
 
         public PHPIniFile()
         {
@@ -98,7 +99,8 @@ namespace Web.Management.PHP.Config
                 bool found = false;
                 for (int i = 0; i < extensionCount; i++)
                 {
-                    if (String.Equals(Extensions[i].Name, file.Name, StringComparison.OrdinalIgnoreCase))
+                    // "extension=curl" and "extension=php_curl.dll" both refer to php_curl.dll
+                    if (PHPIniExtension.IsSameExtension(Extensions[i].Name, file.Name))
                     {
                         found = true;
                         break;
@@ -234,6 +236,8 @@ namespace Web.Management.PHP.Config
 
             string extensionDir = String.Empty;
 
+            _hasByteOrderMark = HasByteOrderMark(FileName);
+
             using (StreamReader reader = new StreamReader(FileName))
             {
                 foreach (object o in PHPIniFile.ParseIniFile(reader))
@@ -343,6 +347,16 @@ namespace Web.Management.PHP.Config
             }
         }
 
+        private static bool HasByteOrderMark(string filename)
+        {
+            using (FileStream stream = File.OpenRead(filename))
+            {
+                byte[] bom = new byte[3];
+                int read = stream.Read(bom, 0, 3);
+                return read == 3 && bom[0] == 0xEF && bom[1] == 0xBB && bom[2] == 0xBF;
+            }
+        }
+
         internal bool Remove(PHPIniBase entry)
         {
             return RawEntries.Remove(entry);
@@ -372,7 +386,8 @@ namespace Web.Management.PHP.Config
                 throw new ArgumentNullException("filename");
             }
 
-            using (StreamWriter writer = new StreamWriter(filename))
+            // Keep the byte order mark of the original file (php.ini files normally have none)
+            using (StreamWriter writer = new StreamWriter(filename, false, new System.Text.UTF8Encoding(_hasByteOrderMark)))
             {
                 foreach (PHPIniBase entry in RawEntries)
                 {
@@ -399,7 +414,7 @@ namespace Web.Management.PHP.Config
                     PHPIniExtension existing = b as PHPIniExtension;
                     if (existing != null)
                     {
-                        if (String.Equals(existing.Name, extension.Name, StringComparison.OrdinalIgnoreCase))
+                        if (PHPIniExtension.IsSameExtension(existing.Name, extension.Name))
                         {
                             foundIndex = i;
                             break;
@@ -623,6 +638,38 @@ namespace Web.Management.PHP.Config
         public object GetData()
         {
             return _data;
+        }
+
+        /// <summary>
+        /// True when both names refer to the same extension, e.g. "curl", "php_curl.dll" and "ext\php_curl.dll".
+        /// </summary>
+        public static bool IsSameExtension(string name1, string name2)
+        {
+            return String.Equals(NormalizeName(name1), NormalizeName(name2), StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Returns the short extension name used by PHP 7.2 and later: "php_curl.dll" becomes "curl".
+        /// </summary>
+        public static string NormalizeName(string name)
+        {
+            if (String.IsNullOrEmpty(name))
+            {
+                return String.Empty;
+            }
+
+            string result = name.Trim().Trim('"', '\'');
+            result = Path.GetFileName(result);
+            if (result.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+            {
+                result = result.Substring(0, result.Length - 4);
+            }
+            if (result.StartsWith("php_", StringComparison.OrdinalIgnoreCase))
+            {
+                result = result.Substring(4);
+            }
+
+            return result.ToLowerInvariant();
         }
 
         public void SetData(object o)

@@ -14,6 +14,7 @@ using System.IO;
 using Microsoft.Web.Administration;
 using Microsoft.Web.Management.Server;
 using Web.Management.PHP.Config;
+using Web.Management.PHP.Install;
 
 namespace Web.Management.PHP
 {
@@ -440,6 +441,243 @@ namespace Web.Management.PHP
             {
                 RaiseException("ErrorPHPIsNotRegistered");
             }
+        }
+
+        [ModuleServiceMethod(PassThrough = Passthrough)]
+        public void ApplyIniMigration(object itemsData)
+        {
+            EnsureServerConnection();
+
+            RemoteObjectCollection<PHPIniMigrationItem> items = new RemoteObjectCollection<PHPIniMigrationItem>();
+            ((IRemoteObject)items).SetData(itemsData);
+
+            try
+            {
+                CreateConfigHelper().ApplyIniMigration(items);
+            }
+            catch (Exception ex)
+            {
+                RaiseInstallException(ex, "ErrorCannotMigrateSettings");
+            }
+        }
+
+        [ModuleServiceMethod(PassThrough = Passthrough)]
+        public object CheckForPHPUpdate()
+        {
+            EnsureServerConnection();
+
+            PHPRelease release = null;
+            try
+            {
+                release = CreateConfigHelper().CheckForPHPUpdate();
+            }
+            catch (Exception ex)
+            {
+                RaiseInstallException(ex, "ErrorCannotCheckForUpdates");
+            }
+
+            return (release != null) ? release.GetData() : null;
+        }
+
+        private PHPConfigHelper CreateConfigHelper()
+        {
+            ManagementUnitWrapper mgmtUnitWrapper = new ManagementUnitWrapper(ManagementUnit);
+            return new PHPConfigHelper(mgmtUnitWrapper);
+        }
+
+        [ModuleServiceMethod(PassThrough = Passthrough)]
+        public object GetAvailablePHPReleases(bool includeArchives)
+        {
+            EnsureServerConnection();
+
+            RemoteObjectCollection<PHPRelease> releases = new RemoteObjectCollection<PHPRelease>();
+            try
+            {
+                foreach (PHPRelease release in PHPReleaseCatalog.GetReleases(includeArchives))
+                {
+                    releases.Add(release);
+                }
+            }
+            catch (Exception ex)
+            {
+                RaiseInstallException(ex, "ErrorCannotGetPHPReleases");
+            }
+
+            return releases.GetData();
+        }
+
+        [ModuleServiceMethod(PassThrough = Passthrough)]
+        public object GetCompatiblePECLPackages(string extensionName)
+        {
+            EnsureServerConnection();
+
+            RemoteObjectCollection<PECLPackage> packages = new RemoteObjectCollection<PECLPackage>();
+            try
+            {
+                foreach (PECLPackage package in CreateConfigHelper().GetCompatiblePECLPackages(extensionName))
+                {
+                    packages.Add(package);
+                }
+            }
+            catch (Exception ex)
+            {
+                RaiseInstallException(ex, "ErrorCannotGetExtensions");
+            }
+
+            return packages.GetData();
+        }
+
+        [ModuleServiceMethod(PassThrough = Passthrough)]
+        public object GetIniMigrationPreview(string sourceHandlerName)
+        {
+            EnsureServerConnection();
+
+            RemoteObjectCollection<PHPIniMigrationItem> items = null;
+            try
+            {
+                items = CreateConfigHelper().GetIniMigrationPreview(sourceHandlerName);
+            }
+            catch (Exception ex)
+            {
+                RaiseInstallException(ex, "ErrorCannotMigrateSettings");
+            }
+
+            return (items != null) ? items.GetData() : null;
+        }
+
+        [ModuleServiceMethod(PassThrough = Passthrough)]
+        public ArrayList GetPECLExtensionNames(string filter)
+        {
+            EnsureServerConnection();
+
+            ArrayList names = new ArrayList();
+            try
+            {
+                names.AddRange(PECLCatalog.GetExtensionNames(filter));
+            }
+            catch (Exception ex)
+            {
+                RaiseInstallException(ex, "ErrorCannotGetExtensions");
+            }
+
+            return names;
+        }
+
+        [ModuleServiceMethod(PassThrough = Passthrough)]
+        public object GetPHPBuildInfo()
+        {
+            EnsureServerConnection();
+
+            PHPBuildInfo build = null;
+            try
+            {
+                build = CreateConfigHelper().GetPHPBuildInfo();
+            }
+            catch (Exception ex)
+            {
+                RaiseInstallException(ex, "ErrorPHPIsNotRegistered");
+            }
+
+            return (build != null) ? build.GetData() : null;
+        }
+
+        [ModuleServiceMethod(PassThrough = Passthrough)]
+        public string InstallPECLExtension(object packageData, bool overwrite)
+        {
+            EnsureServerConnection();
+
+            PECLPackage package = new PECLPackage();
+            package.SetData(packageData);
+
+            string result = null;
+            try
+            {
+                result = CreateConfigHelper().InstallPECLExtension(package, overwrite);
+            }
+            catch (Exception ex)
+            {
+                RaiseInstallException(ex, "ErrorCannotInstallExtension");
+            }
+
+            return result;
+        }
+
+        [ModuleServiceMethod(PassThrough = Passthrough)]
+        public string InstallPHPRelease(object releaseData, string targetDirectory, bool activate)
+        {
+            EnsureServerConnection();
+
+            PHPRelease release = new PHPRelease();
+            release.SetData(releaseData);
+
+            string result = null;
+            try
+            {
+                result = CreateConfigHelper().InstallPHPRelease(release, targetDirectory, activate);
+            }
+            catch (Exception ex)
+            {
+                RaiseInstallException(ex, "ErrorCannotInstallPHP");
+            }
+
+            return result;
+        }
+
+        [ModuleServiceMethod(PassThrough = Passthrough)]
+        public bool IsPHPBranchSupported()
+        {
+            EnsureServerConnection();
+
+            bool result = true;
+            try
+            {
+                result = CreateConfigHelper().IsPHPBranchSupported();
+            }
+            catch (Exception ex)
+            {
+                RaiseInstallException(ex, "ErrorCannotCheckForUpdates");
+            }
+
+            return result;
+        }
+
+        private void RaiseInstallException(Exception ex, string defaultResourceKey)
+        {
+            PHPInstallException installException = ex as PHPInstallException;
+            if (installException != null && !String.IsNullOrEmpty(installException.ResourceKey))
+            {
+                RaiseException(installException.ResourceKey, ex.Message);
+            }
+            else if (ex is FileNotFoundException)
+            {
+                RaiseException("ErrorPHPIniNotFound", ex.Message);
+            }
+            else if (ex is InvalidOperationException)
+            {
+                RaiseException("ErrorPHPIsNotRegistered", ex.Message);
+            }
+            else
+            {
+                RaiseException(defaultResourceKey, ex.Message);
+            }
+        }
+
+        [ModuleServiceMethod(PassThrough = Passthrough)]
+        public string UpgradePHP(string targetDirectory)
+        {
+            EnsureServerConnection();
+
+            string result = null;
+            try
+            {
+                result = CreateConfigHelper().UpgradePHP(targetDirectory);
+            }
+            catch (Exception ex)
+            {
+                RaiseInstallException(ex, "ErrorCannotInstallPHP");
+            }
+
+            return result;
         }
 
         [ModuleServiceMethod(PassThrough = Passthrough)]
